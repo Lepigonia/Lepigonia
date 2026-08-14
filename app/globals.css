@@ -1,0 +1,16 @@
+:root{--bg:#FCFAF8;--text:#121212;--muted:#8A8A8A;--border:rgba(18,18,18,.08);--accent:#121212}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.serif{font-family:Fraunces, Georgia, serif;letter-spacing:-0.03em}
+header{position:sticky;top:0;z-index:50;backdrop-filter:blur(20px);background:rgba(252,250,248,.85);border-bottom:1px solid var(--border)}
+.nav{max-width:1360px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;padding:18px 24px}
+.logo{font-weight:800;letter-spacing:-.02em}
+.tabs{display:flex;gap:28px}
+.tabs a{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding-bottom:4px;border-bottom:2px solid transparent;transition:.2s}
+.tabs a.active,.tabs a:hover{color:var(--text);border-color:var(--text)}
+.container{max-width:1360px;margin:0 auto;padding:48px 24px}
+@media(max-width:768px){.tabs{gap:16px}.tabs a{font-size:11px}.container{padding:28px 16px}}
+.btn{height:40px;padding:0 18px;border-radius:999px;border:1px solid var(--border);background:#121212;color:white;font-size:13px;cursor:pointer}
+.btn-ghost{background:white;color:var(--text)}
+.card{border:1px solid var(--border);border-radius:22px;background:white;padding:24px;transition:.2s}
+.empty{border:1px dashed var(--border);border-radius:22px;padding:48px 24px;text-align:center;color:var(--muted)}
