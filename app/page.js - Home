@@ -1,11 +1,3 @@
 export default function Home(){
-  return (<>
-    <h1 className="serif" style={{fontSize:'clamp(42px,7vw,84px)',lineHeight:.9}}>Collect<br/>moments,<br/>not things.</h1>
-    <p style={{maxWidth:520,marginTop:24,color:'#8A8A8A',lineHeight:1.6}}>A personal travel brand documenting journeys with LOTHAR — VW T4 Syncro. Built as a modular platform. Add posts later, they will appear automatically on Map, Gallery and Blog.</p>
-    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(240px,1fr))',gap:16,marginTop:48}}>
-      <a href="/ai" className="card"><h3 className="serif">AI Trip Planner →</h3><p style={{color:'#8A8A8A',fontSize:14}}>Plan routes with Lothar specs in mind.</p></a>
-      <a href="/map" className="card"><h3 className="serif">Travel Map →</h3><p style={{color:'#8A8A8A',fontSize:14}}>Pins derive from blogposts.</p></a>
-      <a href="/gallery" className="card"><h3 className="serif">Gallery →</h3><p style={{color:'#8A8A8A',fontSize:14}}>Your authentic images from /public/images/</p></a>
-    </div>
-  </>)
+  return <div style={{padding:40, fontFamily:'system-ui'}}><h1>LEPIGONIA</h1><p>Online</p></div>
 }
