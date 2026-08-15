@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { setAdminCookie } from "../../../../../lib/admin";
+import { setAdminCookie } from "../../../../lib/admin";
 
 export async function POST(request) {
   try {
