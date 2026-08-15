@@ -1,30 +1,5 @@
+"use client";
+import { useState } from "react";
 import { Navbar, Footer, T } from "../../components/SiteChrome";
 import { carImage } from "../../lib/carImage";
-
-export const metadata = { title: "Gallery", description: "Travel photography and moments from the road." };
-
-export default function GalleryPage() {
-  return (
-    <>
-      <Navbar />
-      <main className="section-wrap page-top gallery-page">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow"><T en="Gallery" de="Galerie" /></p>
-            <h1 className="page-title"><T en="The road, as I remember it." de="Die Straße, wie ich sie erinnere." /></h1>
-          </div>
-        </div>
-        <div className="gallery-feature">
-          <div className="gallery-feature-media"><img src={carImage} alt="Orange travel vehicle prepared for the road" /></div>
-          <div className="gallery-feature-copy">
-            <p className="eyebrow"><T en="The vehicle" de="Das Fahrzeug" /></p>
-            <h2><T en="A home with wheels." de="Ein Zuhause auf Rädern." /></h2>
-            <p><T en="The first image in the Lepigonia gallery: the orange travel vehicle that carries the stories, gear and freedom of the road." de="Das erste Bild in der Lepigonia-Galerie: das orange Reisefahrzeug, das Geschichten, Ausrüstung und die Freiheit der Straße trägt." /></p>
-            <p className="muted"><T en="More authentic photographs can be added here as the journey continues." de="Weitere echte Fotografien können hier ergänzt werden, während die Reise weitergeht." /></p>
-          </div>
-        </div>
-      </main>
-      <Footer />
-    </>
-  );
-}
+export default function GalleryPage(){const [src,setSrc]=useState("/uploads/car.jpg");return <><Navbar/><main className="section-wrap page-top gallery-page"><div className="section-heading"><div><p className="eyebrow"><T en="Gallery" de="Galerie"/></p><h1 className="page-title"><T en="The road, as I remember it." de="Die Straße, wie ich sie erinnere."/></h1></div></div><div className="gallery-feature"><div className="gallery-feature-media"><img src={src} onError={()=>setSrc(carImage)} alt="Orange travel vehicle prepared for the road"/></div><div className="gallery-feature-copy"><p className="eyebrow"><T en="The vehicle" de="Das Fahrzeug"/></p><h2><T en="A home with wheels." de="Ein Zuhause auf Rädern."/></h2><p><T en="The vehicle that carries the stories, gear and freedom of the road." de="Das Reisefahrzeug, das Geschichten, Ausrüstung und die Freiheit der Straße trägt."/></p><p className="muted"><T en="Replace this image any time from the Admin area." de="Dieses Bild kannst du jederzeit im Admin-Bereich ersetzen."/></p></div></div></main><Footer/></>}
