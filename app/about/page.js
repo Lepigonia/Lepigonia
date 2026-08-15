@@ -1,0 +1,4 @@
+import Image from "next/image";
+import { Navbar, Footer } from "../../components/SiteChrome";
+export const metadata = { title: "About", description: "The person and stories behind Lepigonia." };
+export default function AboutPage(){return <><Navbar/><main className="section-wrap page-top about-page"><div><p className="eyebrow">Behind the journal</p><h1 className="page-title">A real person.<br/><em>A life in motion.</em></h1></div><div className="about-copy"><p>Lepigonia is a personal travel journal — built around real journeys, observations and the places that leave a mark.</p><p>The site is intentionally simple at its core: stories first, beautiful photography second, and everything else in service of the experience.</p><p className="muted">Your portrait, current journey, favourite places and personal details can live here without changing the structure of the site.</p></div></main><Footer/></>}
