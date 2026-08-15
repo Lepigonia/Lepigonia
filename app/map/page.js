@@ -1,15 +1,5 @@
-import fs from "fs"; import path from "path";
-// Map derives from blogposts - if no posts, map is empty
-function getLocations(){
-  // TODO: Connect to real data source - currently reads posts folder
-  // Each post frontmatter should contain: lat, lng, location, country
-  return [];
-}
-export default function MapPage(){
-  const locs = getLocations();
-  return(<>
-    <h1 className="serif" style={{fontSize:52}}>Travel Map</h1>
-    {locs.length===0? <div className="empty" style={{marginTop:24}}>No locations yet. Add a blogpost with lat/lng frontmatter - pin appears automatically.<br/><br/>Example frontmatter:<br/>---<br/>title: Title<br/>location: Morocco<br/>lat: 31.6295<br/>lng: -7.9811<br/>---</div> :
-    <div className="card" style={{marginTop:24,height:500}}>Map component - connect to MapLibre/Leaflet here. Data: {JSON.stringify(locs)}</div>}
-  </>)
-}
+import Link from "next/link";
+import { Navbar, Footer, T } from "../../components/SiteChrome";
+import { getPosts } from "../../lib/posts";
+export const metadata = { title: "Travelmap", description: "Destinations and journeys from Lepigonia." };
+export default function MapPage(){ const posts=getPosts(); const locations=posts.filter(p=>p.location); return <><Navbar/><main className="section-wrap page-top map-page"><p className="eyebrow"><T en="Travelmap" de="Reisekarte" /></p><h1 className="page-title"><T en={<>Places I’ve been.<br/><em>Places I want to return to.</em></>} de={<>Orte, an denen ich war.<br/><em>Orte, zu denen ich zurückkehren möchte.</em>} /></h1><p className="page-lead"><T en="A living map of the journey. As stories are added, destinations will collect here automatically." de="Eine lebendige Karte der Reise. Mit jeder neuen Geschichte wachsen hier die Reiseziele automatisch." /></p><div className="map-panel"><div className="map-lines"/><div className="map-center"><span className="map-pin"/><p><T en="The journey is just beginning." de="Die Reise beginnt gerade erst." /></p></div></div>{locations.length>0&&<div className="destination-list">{locations.map(p=><Link href={`/blog/${p.slug}`} key={p.slug}><span>{p.location}</span><small>{p.date||""}</small></Link>)}</div>}</main><Footer/></>}
