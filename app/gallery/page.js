@@ -1,12 +1,4 @@
-import fs from "fs"; import path from "path";
-export default function GalleryPage(){
-  // TODO: Connect to /public/images/gallery/ - list files via API route later
-  return(<>
-    <h1 className="serif" style={{fontSize:52}}>Gallery</h1>
-    <div className="empty" style={{marginTop:24}}>
-      No images yet.<br/>Upload your authentic images to <code>/public/images/gallery/</code><br/>
-      Then they will be listed here. Add route <code>/api/images</code> later for S3/Cloud storage.<br/><br/>
-      <span style={{fontSize:12}}>Placeholder for: title, location, date, category, description per image</span>
-    </div>
-  </>)
-}
+import { Navbar, Footer, T } from "../../components/SiteChrome";
+import { carImage } from "../../lib/carImage";
+export const metadata = { title: "Gallery", description: "Travel photography and moments from the road." };
+export default function GalleryPage(){return <><Navbar/><main className="section-wrap page-top gallery-page"><div className="section-heading"><div><p className="eyebrow"><T en="Gallery" de="Galerie" /></p><h1 className="page-title"><T en={<>The road,<br/><em>as I remember it.</em></>} de={<>Die Straße,<br/><em>wie ich sie erinnere.</em>} /></h1></div></div><div className="gallery-feature"><div className="gallery-feature-media"><img src={carImage} alt="Orange travel vehicle prepared for the road" /></div><div className="gallery-feature-copy"><p className="eyebrow"><T en="The vehicle" de="Das Fahrzeug" /></p><h2><T en="A home with wheels." de="Ein Zuhause auf Rädern." /></h2><p><T en="The first image in the Lepigonia gallery: the orange travel vehicle that carries the stories, gear and freedom of the road." de="Das erste Bild in der Lepigonia-Galerie: das orange Reisefahrzeug, das Geschichten, Ausrüstung und die Freiheit der Straße trägt." /></p><p className="muted"><T en="More authentic photographs can be added here as the journey continues." de="Weitere echte Fotografien können hier ergänzt werden, während die Reise weitergeht." /></p></div></div></main><Footer/></>}
