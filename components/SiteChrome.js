@@ -14,52 +14,29 @@ export function T({ en, de, className = "" }) {
   const [language, setLanguage] = useState("EN");
   useEffect(() => {
     const sync = () => setLanguage(localStorage.getItem("lepigonia-language") === "DE" ? "DE" : "EN");
-    sync();
-    window.addEventListener("lepigonia-language", sync);
-    return () => window.removeEventListener("lepigonia-language", sync);
+    sync(); window.addEventListener("lepigonia-language", sync); return () => window.removeEventListener("lepigonia-language", sync);
   }, []);
   return <span className={className}>{language === "DE" ? de : en}</span>;
 }
 
 function LanguageSwitch() {
   const [language, setLanguage] = useState("EN");
-  useEffect(() => {
-    const saved = localStorage.getItem("lepigonia-language");
-    if (saved === "DE" || saved === "EN") setLanguage(saved);
-  }, []);
-  function change(next) {
-    setLanguage(next);
-    localStorage.setItem("lepigonia-language", next);
-    document.documentElement.lang = next.toLowerCase();
-    document.documentElement.dataset.language = next;
-    window.dispatchEvent(new Event("lepigonia-language"));
-  }
+  useEffect(() => { const saved = localStorage.getItem("lepigonia-language"); if (saved === "DE" || saved === "EN") setLanguage(saved); }, []);
+  function change(next) { setLanguage(next); localStorage.setItem("lepigonia-language", next); document.documentElement.lang = next.toLowerCase(); document.documentElement.dataset.language = next; window.dispatchEvent(new Event("lepigonia-language")); }
   return <div className="language-switch" aria-label="Language"><button type="button" className={language === "DE" ? "active" : ""} onClick={() => change("DE")}>DE</button><span>/</span><button type="button" className={language === "EN" ? "active" : ""} onClick={() => change("EN")}>EN</button></div>;
 }
 
 export function Navbar() {
-  const [open, setOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  useEffect(() => {
-    const saved = localStorage.getItem("lepigonia-language");
-    const lang = saved === "DE" ? "DE" : "EN";
-    document.documentElement.lang = lang.toLowerCase();
-    document.documentElement.dataset.language = lang;
-    const onScroll = () => setScrolled(window.scrollY > 24);
-    onScroll(); window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  const [open, setOpen] = useState(false); const [scrolled, setScrolled] = useState(false);
+  useEffect(() => { const saved = localStorage.getItem("lepigonia-language"); const lang = saved === "DE" ? "DE" : "EN"; document.documentElement.lang = lang.toLowerCase(); document.documentElement.dataset.language = lang; const onScroll = () => setScrolled(window.scrollY > 24); onScroll(); window.addEventListener("scroll", onScroll, { passive: true }); return () => window.removeEventListener("scroll", onScroll); }, []);
+  const login = <Link href="/login" onClick={() => setOpen(false)}><T en="Login" de="Anmelden" /></Link>;
   return <header className={`site-header ${scrolled ? "site-header--scrolled" : ""}`}>
-    <div className="nav-shell">
-      <Link href="/" className="wordmark" onClick={() => setOpen(false)}>Lepigonia</Link>
-      <nav className="desktop-nav" aria-label="Primary navigation">{navItems.map(([en, de, href]) => <Link key={href} href={href}>{<T en={en} de={de} />}</Link>)}<a href="/#newsletter"><T en="Newsletter" de="Newsletter" /></a><LanguageSwitch /></nav>
-      <button className="menu-toggle" aria-expanded={open} aria-controls="mobile-menu" onClick={() => setOpen(v => !v)}><span /><span /><span className="sr-only">Menu</span></button>
-    </div>
-    <div id="mobile-menu" className={`mobile-menu ${open ? "is-open" : ""}`}>{navItems.map(([en, de, href]) => <Link key={href} href={href} onClick={() => setOpen(false)}><T en={en} de={de} /></Link>)}<a href="/#newsletter" onClick={() => setOpen(false)}><T en="Newsletter" de="Newsletter" /></a><LanguageSwitch /></div>
+    <div className="nav-shell"><Link href="/" className="wordmark" onClick={() => setOpen(false)}>Lepigonia</Link><nav className="desktop-nav" aria-label="Primary navigation">{navItems.map(([en, de, href]) => <Link key={href} href={href}><T en={en} de={de} /></Link>)}<a href="/#newsletter"><T en="Newsletter" de="Newsletter" /></a>{login}<LanguageSwitch /></nav><button className="menu-toggle" aria-expanded={open} aria-controls="mobile-menu" onClick={() => setOpen(v => !v)}><span /><span /><span className="sr-only">Menu</span></button></div>
+    <div id="mobile-menu" className={`mobile-menu ${open ? "is-open" : ""}`}>{navItems.map(([en, de, href]) => <Link key={href} href={href} onClick={() => setOpen(false)}><T en={en} de={de} /></Link>)}<a href="/#newsletter" onClick={() => setOpen(false)}><T en="Newsletter" de="Newsletter" /></a>{login}<LanguageSwitch /></div>
   </header>;
 }
 
-export function Footer() { return <footer className="site-footer"><div><Link href="/" className="wordmark">Lepigonia</Link><p><T en="Personal stories, places, food and moments from the road." de="Persönliche Geschichten, Orte, Essen und Momente unterwegs." /></p></div><div className="footer-links">{navItems.map(([en, de, href]) => <Link key={href} href={href}><T en={en} de={de} /></Link>)}</div><div className="footer-note"><T en="Until the next adventure." de="Bis zum nächsten Abenteuer." /></div></footer>; }
+export function Footer() { return <footer className="site-footer"><div><Link href="/" className="wordmark">Lepigonia</Link><p><T en="Personal stories, places, food and moments from the road." de="Persönliche Geschichten, Orte, Essen und Momente unterwegs." /></p></div><div className="footer-links">{navItems.map(([en, de, href]) => <Link key={href} href={href}><T en={en} de={de} /></Link>)}<Link href="/login"><T en="Login" de="Anmelden" /></Link></div><div className="footer-note"><T en="Until the next adventure." de="Bis zum nächsten Abenteuer." /></div></footer>; }
 
 export function NewsletterModal() {
   const [visible, setVisible] = useState(false); const [email, setEmail] = useState(""); const [status, setStatus] = useState("idle");
