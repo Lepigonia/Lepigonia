@@ -1,34 +1,7 @@
 import { NextResponse } from "next/server";
 import { getPosts } from "../../../../lib/posts";
 import { getGithubFile, putGithubFile, deleteGithubFile, isAdmin } from "../../../../lib/admin";
-
 export const dynamic = "force-dynamic";
-
-export async function GET(request) {
-  if (!isAdmin(request)) return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
-  return NextResponse.json({ posts: getPosts() });
-}
-
-export async function POST(request) {
-  if (!isAdmin(request)) return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
-  try {
-    const post = await request.json();
-    if (!post.slug || !/^[a-z0-9-]+$/.test(post.slug)) return NextResponse.json({ error: "Der Slug darf nur Kleinbuchstaben, Zahlen und Bindestriche enthalten." }, { status: 400 });
-    const frontmatter = ["title", "date", "location", "image", "excerpt"].map((key) => `${key}: ${String(post[key] || "").replace(/\n/g, " ")}`).join("\n");
-    const content = `---\n${frontmatter}\n---\n\n${String(post.content || "").trim()}\n`;
-    let sha;
-    try { sha = (await getGithubFile(`posts/${post.slug}.md`)).sha; } catch {}
-    await putGithubFile(`posts/${post.slug}.md`, content, `${sha ? "Update" : "Add"} post: ${post.title || post.slug}`, sha);
-    return NextResponse.json({ ok: true });
-  } catch (error) { return NextResponse.json({ error: error.message || "Speichern fehlgeschlagen." }, { status: 500 }); }
-}
-
-export async function DELETE(request) {
-  if (!isAdmin(request)) return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
-  try {
-    const { slug } = await request.json();
-    const file = await getGithubFile(`posts/${slug}.md`);
-    await deleteGithubFile(`posts/${slug}.md`, `Delete post: ${slug}`, file.sha);
-    return NextResponse.json({ ok: true });
-  } catch (error) { return NextResponse.json({ error: error.message || "Löschen fehlgeschlagen." }, { status: 500 }); }
-}
+export async function GET(request){if(!isAdmin(request))return NextResponse.json({error:"Nicht autorisiert."},{status:401});return NextResponse.json({posts:getPosts()});}
+export async function POST(request){if(!isAdmin(request))return NextResponse.json({error:"Nicht autorisiert."},{status:401});try{const post=await request.json();if(!post.slug||!/^[a-z0-9-]+$/.test(post.slug))return NextResponse.json({error:"Der Slug darf nur Kleinbuchstaben, Zahlen und Bindestriche enthalten."},{status:400});const frontmatter=["title","date","location","country","image","excerpt"].map(key=>`${key}: ${String(post[key]||"").replace(/\n/g," ")}`).join("\n");const content=`---\n${frontmatter}\n---\n\n${String(post.content||"").trim()}\n`;let sha;try{sha=(await getGithubFile(`posts/${post.slug}.md`)).sha}catch{}await putGithubFile(`posts/${post.slug}.md`,content,`${sha?"Update":"Add"} post: ${post.title||post.slug}`,sha);return NextResponse.json({ok:true});}catch(error){return NextResponse.json({error:error.message||"Speichern fehlgeschlagen."},{status:500});}}
+export async function DELETE(request){if(!isAdmin(request))return NextResponse.json({error:"Nicht autorisiert."},{status:401});try{const{slug}=await request.json();const file=await getGithubFile(`posts/${slug}.md`);await deleteGithubFile(`posts/${slug}.md`,`Delete post: ${slug}`,file.sha);return NextResponse.json({ok:true});}catch(error){return NextResponse.json({error:error.message||"Löschen fehlgeschlagen."},{status:500});}}
