@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { putGithubBinary, isAdmin } from "../../../../lib/admin";
 
-const MAX_BYTES = 2.75 * 1024 * 1024;
+const MAX_BYTES = 850 * 1024;
 
 export async function POST(request) {
   if (!isAdmin(request)) return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
@@ -14,7 +14,7 @@ export async function POST(request) {
     const base64 = match[2];
     if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(mime)) return NextResponse.json({ error: "Nicht unterstütztes Bildformat." }, { status: 400 });
     const bytes = Math.floor(base64.length * 3 / 4) - (base64.endsWith("==") ? 2 : base64.endsWith("=") ? 1 : 0);
-    if (bytes > MAX_BYTES) return NextResponse.json({ error: "Das Bild ist nach der Optimierung noch zu groß. Bitte ein kleineres Bild verwenden." }, { status: 400 });
+    if (bytes > MAX_BYTES) return NextResponse.json({ error: "Das Bild ist noch zu groß. Es muss maximal 850 KB groß sein." }, { status: 400 });
     const safe = `${Date.now()}-${filename.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
     const path = `public/uploads/${safe}`;
     await putGithubBinary(path, data, `Upload image: ${safe}`);
