@@ -1,41 +1,231 @@
 "use client";
-import { useEffect, useState } from "react";
+
+import { useState } from "react";
 import { upload } from "@vercel/blob/client";
 import Link from "next/link";
-import BlogBlockEditor from "../../components/BlogBlockEditor";
+import AdminAboutEditor from "../../components/admin/AdminAboutEditor";
+import AdminGalleryEditor from "../../components/admin/AdminGalleryEditor";
+import AdminLogin from "../../components/admin/AdminLogin";
+import AdminSidebar from "../../components/admin/AdminSidebar";
+import AdminStoryEditor from "../../components/admin/AdminStoryEditor";
+import { adminApi } from "../../lib/admin-api";
+import { useAdminData } from "../../hooks/useAdminData";
 import "./admin.css";
 
-const blank = () => ({ slug:"", title:"", date:new Date().toISOString().slice(0,10), location:"", country:"", lat:"", lng:"", image:"", excerpt:"", content:"" });
+const blankPost = () => ({
+  slug: "",
+  title: "",
+  date: new Date().toISOString().slice(0, 10),
+  location: "",
+  country: "",
+  lat: "",
+  lng: "",
+  image: "",
+  excerpt: "",
+  content: "",
+});
 
-export default function Admin(){
-  const [ok,setOk]=useState(null),[email,setEmail]=useState(""),[password,setPassword]=useState(""),[posts,setPosts]=useState([]),[post,setPost]=useState(blank()),[countries,setCountries]=useState([]),[gallery,setGallery]=useState(null),[section,setSection]=useState("stories"),[error,setError]=useState(""),[status,setStatus]=useState(""),[about,setAbout]=useState(null),[galleryFiles,setGalleryFiles]=useState([]);
+export default function Admin() {
+  const data = useAdminData();
+  const [post, setPost] = useState(blankPost);
+  const [section, setSection] = useState("stories");
+  const [gallery, setGallery] = useState("");
+  const [galleryFiles, setGalleryFiles] = useState([]);
+  const [error, setError] = useState("");
+  const [status, setStatus] = useState("");
 
-  async function load(){
-    const r=await fetch("/api/admin/posts",{cache:"no-store"});
-    if(!r.ok){setOk(false);return}
-    setPosts((await r.json()).posts||[]);setOk(true);
-    const g=await fetch("/api/admin/gallery",{cache:"no-store"});
-    if(g.ok){const d=await g.json();setCountries(d.countries||[]);if(!gallery&&d.countries?.[0])setGallery(d.countries[0].slug)}
-    const a=await fetch("/api/admin/about",{cache:"no-store"});if(a.ok)setAbout(await a.json());
+  const currentCountry = data.countries.find((country) => country.slug === gallery);
+
+  function clearMessages() {
+    setError("");
+    setStatus("");
   }
-  useEffect(()=>{load()},[]);
 
-  async function login(e){e.preventDefault();const r=await fetch("/api/admin/login",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({email,password})});if(!r.ok){setError((await r.json()).error);return}await load()}
-  async function save(e){e.preventDefault();setError("");setStatus("Speichere …");const r=await fetch("/api/admin/posts",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(post)}),d=await r.json();if(!r.ok){setError(d.error);setStatus("");return}setStatus("Gespeichert – Vercel veröffentlicht automatisch.");await load()}
-  async function del(){if(!confirm("Beitrag wirklich löschen?"))return;const r=await fetch("/api/admin/posts",{method:"DELETE",headers:{"content-type":"application/json"},body:JSON.stringify({slug:post.slug})});if(!r.ok){setError((await r.json()).error);return}setPost(blank());setSection("stories");await load()}
-  async function articleUpload(e){const f=e.target.files?.[0];e.target.value="";if(!f)return;setError("");setStatus("Bild wird direkt zu Vercel Blob hochgeladen …");try{const blob=await upload(`blog/${Date.now()}-${f.name.replace(/[^a-zA-Z0-9._-]/g,"-")}`,f,{access:"public",handleUploadUrl:"/api/admin/blob-upload",multipart:true,onUploadProgress(p){setStatus(`Bild wird hochgeladen – ${Math.round(p.percentage)}%`)}});setPost(p=>({...p,image:blob.url}));setStatus("Bild hochgeladen – jetzt speichern.")}catch(err){setStatus("");setError(err?.message||"Bild-Upload fehlgeschlagen.")}}
-  async function galleryUpload(files){if(!files.length||!gallery)return;setError("");setStatus(`0 / ${files.length}: Vercel Blob Upload wird gestartet …`);let done=0;const failures=[];for(let i=0;i<files.length;i++){const file=files[i];try{const blob=await upload(`gallery/${gallery}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g,"-")}`,file,{access:"public",handleUploadUrl:"/api/admin/blob-upload",multipart:true,onUploadProgress(p){setStatus(`${i+1} / ${files.length}: ${file.name} – ${Math.round(p.percentage)}%`)}});setStatus(`${i+1} / ${files.length}: ${file.name} wird registriert …`);const reg=await fetch("/api/admin/gallery",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({action:"image-register",slug:gallery,url:blob.url,filename:blob.pathname,storage:"blob"})});const rd=await reg.json();if(!reg.ok)throw new Error(rd.error||`Galerie-Registrierung fehlgeschlagen (${reg.status})`);done++}catch(err){failures.push(`${file.name}: ${err.message}`)}}await load();setGalleryFiles([]);if(failures.length){setError(`${done} von ${files.length} Bildern hinzugefügt.\n${failures.join("\n")}`);setStatus(done?`${done} Galeriebild(er) hinzugefügt.`:"")}else setStatus(`${done} Galeriebild(er) erfolgreich hinzugefügt.`)}
-  async function galleryAction(body){setError("");const r=await fetch("/api/admin/gallery",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)}),d=await r.json();if(!r.ok){setError(d.error);return}if(body.action==="country-update"&&d.slug)setGallery(d.slug);await load()}
-  async function saveAbout(e){e.preventDefault();setError("");setStatus("About wird gespeichert …");const r=await fetch("/api/admin/about",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(about)}),d=await r.json();if(!r.ok){setError(d.error);setStatus("");return}setStatus("About gespeichert.")}
+  async function refresh() {
+    const result = await data.reload();
+    if (!result) return;
+    if (!gallery && result.countries[0]) setGallery(result.countries[0].slug);
+  }
 
-  if(ok===null)return <div className="admin-loading">Lepigonia Admin …</div>;
-  if(!ok)return <main className="admin-login"><Link href="/" className="admin-brand">Lepigonia</Link><div className="login-card"><p className="admin-eyebrow">Private area</p><h1>Admin Login</h1><p>Geschichten und Galerie verwalten.</p><form onSubmit={login}><label>E-Mail<input type="email" value={email} onChange={e=>setEmail(e.target.value)} required/></label><label>Passwort<input type="password" value={password} onChange={e=>setPassword(e.target.value)} required/></label><button>Einloggen →</button>{error&&<p className="admin-error">{error}</p>}</form></div></main>;
+  async function logout() {
+    await adminApi.logout();
+    window.location.reload();
+  }
 
-  const current=countries.find(c=>c.slug===gallery);
-  return <main className="admin-shell"><header className="admin-top"><div><Link href="/" className="admin-brand">Lepigonia</Link><span className="admin-top-label"> / Admin</span></div><nav className="admin-top-nav"><Link href="/gallery" target="_blank">Galerie ↗</Link><Link href="/map" target="_blank">Karte ↗</Link><Link href="/" target="_blank">Website ↗</Link><button onClick={async()=>{await fetch("/api/admin/logout",{method:"POST"});setOk(false)}}>Logout</button></nav></header>
-  <div className="admin-grid"><aside className="admin-sidebar"><button className="new-button" onClick={()=>{setSection("stories");setPost(blank());setError("");setStatus("");}}>＋ Neue Geschichte</button><b>Stories</b>{posts.map(p=><button key={p.slug} className={`post-nav ${post.slug===p.slug&&section==="stories"?"active":""}`} onClick={()=>{setSection("stories");setPost(p);setError("");setStatus("")}}><strong>{p.title||p.slug}</strong><small>{p.country||p.location||"Ohne Land"}</small></button>)}<hr/><b>Galerie</b><button className="new-button" onClick={()=>{const n=prompt("Neues Land:");if(n)galleryAction({action:"country-create",name:n})}}>＋ Neues Land</button>{countries.map(c=><button key={c.slug} className={`post-nav ${gallery===c.slug&&section==="gallery"?"active":""}`} onClick={()=>{setSection("gallery");setGallery(c.slug);setPost(blank())}}><strong>{c.name}</strong><small>{c.images?.length||0} Bilder</small></button>)}<hr/><button className="post-nav" onClick={()=>{setSection("about");setPost(blank())}}><strong>About me</strong><small>Persönliche Seite bearbeiten</small></button></aside>
+  async function savePost(event) {
+    event.preventDefault();
+    clearMessages();
+    setStatus("Speichere …");
+    try {
+      await adminApi.savePost(post);
+      setStatus("Gespeichert – Vercel veröffentlicht automatisch.");
+      await refresh();
+    } catch (err) {
+      setError(err.message);
+      setStatus("");
+    }
+  }
 
-  {section==="about"?<section className="editor"><div className="editor-head"><div><p className="admin-eyebrow">About me</p><h1>Über mich bearbeiten</h1></div></div>{about&&<form onSubmit={saveAbout} className="editor-form">{["en","de"].map(l=><div key={l} className="about-admin-block"><h2>{l.toUpperCase()}</h2><label>Kleine Überschrift<input value={about[l]?.eyebrow||""} onChange={e=>setAbout(a=>({...a,[l]:{...a[l],eyebrow:e.target.value}}))}/></label><label>Headline<input value={about[l]?.title||""} onChange={e=>setAbout(a=>({...a,[l]:{...a[l],title:e.target.value}}))}/></label>{[0,1,2].map(i=><label key={i}>Absatz {i+1}<textarea value={about[l]?.paragraphs?.[i]||""} onChange={e=>setAbout(a=>({...a,[l]:{...a[l],paragraphs:a[l].paragraphs.map((p,j)=>j===i?e.target.value:p)}}))}/></label>)}</div>)}<div className="save-row"><button className="save">About speichern →</button>{status&&<span className="status">{status}</span>}</div>{error&&<p className="admin-error">{error}</p>}</form>}</section>
-  :section==="stories"?<section className="editor"><div className="editor-head"><div><p className="admin-eyebrow">Editor 2.0</p><h1>{post.slug?"Geschichte bearbeiten":"Neue Geschichte"}</h1></div>{post.slug&&<button className="danger" onClick={del}>Löschen</button>}</div><form onSubmit={save} className="editor-form"><div className="field-row"><label>Titel<input value={post.title} onChange={e=>setPost({...post,title:e.target.value})} required/></label><label>Slug<input value={post.slug} onChange={e=>setPost({...post,slug:e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g,"-")})} required/></label></div><div className="field-row"><label>Datum<input type="date" value={post.date} onChange={e=>setPost({...post,date:e.target.value})}/></label><label>Ort<input value={post.location} onChange={e=>setPost({...post,location:e.target.value})}/></label></div><label>Land<select value={post.country} onChange={e=>setPost({...post,country:e.target.value})}><option value="">Land wählen</option>{countries.map(c=><option key={c.slug} value={c.name}>{c.name}</option>)}</select></label><div className="field-row"><label>Breitengrad (Lat)<input type="number" step="any" min="-90" max="90" placeholder="z.B. 38.7223" value={post.lat||""} onChange={e=>setPost({...post,lat:e.target.value})}/></label><label>Längengrad (Long)<input type="number" step="any" min="-180" max="180" placeholder="z.B. -9.1393" value={post.lng||""} onChange={e=>setPost({...post,lng:e.target.value})}/></label></div><label>Teaser<input value={post.excerpt} onChange={e=>setPost({...post,excerpt:e.target.value})}/></label><label>Hero-Bild-URL<input value={post.image} onChange={e=>setPost({...post,image:e.target.value})}/></label><label className="upload">Hero-Bild hochladen<input type="file" accept="image/*" onChange={articleUpload}/></label><p className="upload-hint">Das Hero-Bild wird direkt in Vercel Blob gespeichert. Bilder im Text können separat eingefügt werden.</p><BlogBlockEditor value={post.content} onChange={content=>setPost(p=>({...p,content}))} country={post.country}/><div className="save-row"><button className="save">Speichern & veröffentlichen →</button>{status&&<span className="status">{status}</span>}</div>{error&&<p className="admin-error">{error}</p>}</form></section>
-  :<section className="editor"><div className="editor-head"><div><p className="admin-eyebrow">Galerie</p><h1>{current?.name||"Galerie"}</h1><p>Blogbilder erscheinen automatisch. Zusätzliche Fotos kannst du hier unabhängig hochladen.</p></div></div>{current&&<><label className="upload gallery-upload">＋ Mehrere Bilder hinzufügen<input type="file" accept="image/*" multiple onChange={e=>{const f=[...(e.target.files||[])];setGalleryFiles(f);if(f.length)galleryUpload(f)}}/></label><p className="upload-hint">{galleryFiles.length?`${galleryFiles.length} Bilder ausgewählt – Upload läuft …`:"Große iPhone/iPhoto-Originale werden direkt zu Vercel Blob hochgeladen."}</p>{status&&<p className="status">{status}</p>}{error&&<p className="admin-error" style={{whiteSpace:"pre-line"}}>{error}</p>}<div className="story-grid">{current.images?.map(i=><div className="story-card" key={i.id}><div className="story-media"><img src={i.url} alt={i.title||"Galeriebild"}/></div><div className="story-meta"><span>{i.source==="manual"?"Manuell":"Blogartikel"}</span>{i.source==="manual"&&<button className="danger" onClick={()=>{if(confirm("Bild wirklich löschen?"))galleryAction({action:"image-delete",slug:current.slug,id:i.id})}}>Löschen</button>}</div></div>)}</div><hr/><div className="field-row gallery-settings"><label>Land umbenennen<input defaultValue={current.name} onBlur={e=>{if(e.target.value!==current.name)galleryAction({action:"country-update",slug:current.slug,name:e.target.value})}}/></label><button className="danger" onClick={()=>{if(confirm(`Land ${current.name} löschen? Blogbilder bleiben erhalten.`))galleryAction({action:"country-delete",slug:current.slug})}}>Land löschen</button></div></>}</section>}</div></main>
+  async function deletePost() {
+    if (!confirm("Beitrag wirklich löschen?")) return;
+    clearMessages();
+    try {
+      await adminApi.deletePost(post.slug);
+      setPost(blankPost());
+      setSection("stories");
+      await refresh();
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  async function uploadHero(event) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    clearMessages();
+    setStatus("Bild wird direkt zu Vercel Blob hochgeladen …");
+    try {
+      const blob = await upload(`blog/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`, file, {
+        access: "public",
+        handleUploadUrl: "/api/admin/blob-upload",
+        multipart: true,
+        onUploadProgress: (progress) => setStatus(`Bild wird hochgeladen – ${Math.round(progress.percentage)}%`),
+      });
+      setPost((value) => ({ ...value, image: blob.url }));
+      setStatus("Bild hochgeladen – jetzt speichern.");
+    } catch (err) {
+      setStatus("");
+      setError(err.message || "Bild-Upload fehlgeschlagen.");
+    }
+  }
+
+  async function uploadGallery(files) {
+    if (!files.length || !gallery) return;
+    setGalleryFiles(files);
+    clearMessages();
+    let done = 0;
+    const failures = [];
+    for (let index = 0; index < files.length; index += 1) {
+      const file = files[index];
+      try {
+        const blob = await upload(`gallery/${gallery}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`, file, {
+          access: "public",
+          handleUploadUrl: "/api/admin/blob-upload",
+          multipart: true,
+          onUploadProgress: (progress) => setStatus(`${index + 1} / ${files.length}: ${file.name} – ${Math.round(progress.percentage)}%`),
+        });
+        setStatus(`${index + 1} / ${files.length}: ${file.name} wird registriert …`);
+        await adminApi.galleryAction({ action: "image-register", slug: gallery, url: blob.url, filename: blob.pathname, storage: "blob" });
+        done += 1;
+      } catch (err) {
+        failures.push(`${file.name}: ${err.message}`);
+      }
+    }
+    setGalleryFiles([]);
+    await refresh();
+    if (failures.length) {
+      setError(`${done} von ${files.length} Bildern hinzugefügt.\n${failures.join("\n")}`);
+      setStatus(done ? `${done} Galeriebild(er) hinzugefügt.` : "");
+    } else {
+      setStatus(`${done} Galeriebild(er) erfolgreich hinzugefügt.`);
+    }
+  }
+
+  async function galleryAction(body) {
+    clearMessages();
+    try {
+      const result = await adminApi.galleryAction(body);
+      if (body.action === "country-update" && result.slug) setGallery(result.slug);
+      await refresh();
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  async function saveAbout(event) {
+    event.preventDefault();
+    clearMessages();
+    setStatus("About wird gespeichert …");
+    try {
+      await adminApi.saveAbout(data.about);
+      setStatus("About gespeichert.");
+    } catch (err) {
+      setError(err.message);
+      setStatus("");
+    }
+  }
+
+  function updateAbout(language, field, value, index) {
+    data.setAbout((current) => {
+      const localized = { ...(current[language] || {}) };
+      if (field === "paragraphs") {
+        const paragraphs = [...(localized.paragraphs || ["", "", ""])];
+        paragraphs[index] = value;
+        localized.paragraphs = paragraphs;
+      } else {
+        localized[field] = value;
+      }
+      return { ...current, [language]: localized };
+    });
+  }
+
+  if (data.ready === null) return <div className="admin-loading">Lepigonia Admin …</div>;
+  if (!data.ready) return <AdminLogin onSuccess={refresh} />;
+
+  function newStory() {
+    setSection("stories");
+    setPost(blankPost());
+    clearMessages();
+  }
+
+  function selectStory(value) {
+    setSection("stories");
+    setPost(value);
+    clearMessages();
+  }
+
+  function selectCountry(country) {
+    setSection("gallery");
+    setGallery(country.slug);
+    setPost(blankPost());
+    clearMessages();
+  }
+
+  function newCountry() {
+    const name = prompt("Neues Land:");
+    if (name) galleryAction({ action: "country-create", name });
+  }
+
+  return (
+    <main className="admin-shell">
+      <header className="admin-top">
+        <div><Link href="/" className="admin-brand">Lepigonia</Link><span className="admin-top-label"> / Admin</span></div>
+        <nav className="admin-top-nav"><button onClick={logout}>Logout</button></nav>
+      </header>
+      <div className="admin-grid">
+        <AdminSidebar
+          posts={data.posts}
+          countries={data.countries}
+          postSlug={post.slug}
+          gallery={gallery}
+          section={section}
+          onNewStory={newStory}
+          onSelectStory={selectStory}
+          onNewCountry={newCountry}
+          onSelectCountry={selectCountry}
+          onAbout={() => { setSection("about"); setPost(blankPost()); clearMessages(); }}
+        />
+        {section === "about" && (
+          <AdminAboutEditor about={data.about} status={status} error={error} onChange={updateAbout} onSave={saveAbout} />
+        )}
+        {section === "stories" && (
+          <AdminStoryEditor post={post} countries={data.countries} status={status} error={error} onChange={setPost} onSave={savePost} onDelete={deletePost} onHeroUpload={uploadHero} />
+        )}
+        {section === "gallery" && (
+          <AdminGalleryEditor country={currentCountry} files={galleryFiles} status={status} error={error} onFiles={uploadGallery} onAction={galleryAction} />
+        )}
+      </div>
+    </main>
+  );
 }
