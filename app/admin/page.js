@@ -16,7 +16,6 @@ export default function Admin() {
   const editor = useAdminEditorState({
     setAbout: data.setAbout,
     countries: data.countries,
-    clearMessages: () => actions.clearMessages(),
   });
   const actions = useAdminActions({
     data,
@@ -25,12 +24,16 @@ export default function Admin() {
     setPost: editor.setPost,
     setSection: editor.setSection,
   });
-  const currentCountry = data.countries.find((country) => country.slug === editor.gallery);
+
+  const clearMessages = actions.clearMessages;
+  const newStory = () => { clearMessages(); editor.newStory(); };
+  const selectStory = (value) => { clearMessages(); editor.selectStory(value); };
+  const selectCountry = (country) => { clearMessages(); editor.selectCountry(country); };
+  const selectAbout = () => { clearMessages(); editor.selectAbout(); };
+  const newCountry = () => { clearMessages(); editor.newCountry(actions.galleryAction); };
 
   if (data.ready === null) return <div className="admin-loading">Lepigonia Admin …</div>;
   if (!data.ready) return <AdminLogin onSuccess={actions.refresh} />;
-
-  const createCountry = (body) => actions.galleryAction(body);
 
   return (
     <main className="admin-shell">
@@ -45,11 +48,11 @@ export default function Admin() {
           postSlug={editor.post.slug}
           gallery={editor.gallery}
           section={editor.section}
-          onNewStory={editor.newStory}
-          onSelectStory={editor.selectStory}
-          onNewCountry={() => editor.newCountry(createCountry)}
-          onSelectCountry={editor.selectCountry}
-          onAbout={editor.selectAbout}
+          onNewStory={newStory}
+          onSelectStory={selectStory}
+          onNewCountry={newCountry}
+          onSelectCountry={selectCountry}
+          onAbout={selectAbout}
         />
         {editor.section === "about" && (
           <AdminAboutEditor
@@ -74,7 +77,7 @@ export default function Admin() {
         )}
         {editor.section === "gallery" && (
           <AdminGalleryEditor
-            country={currentCountry}
+            country={editor.currentCountry}
             files={actions.galleryFiles}
             status={actions.status}
             error={actions.error}
