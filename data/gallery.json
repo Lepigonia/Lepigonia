@@ -4,7 +4,15 @@
       "id": "portugal",
       "slug": "portugal",
       "name": "Portugal",
-      "images": []
+      "images": [
+        {
+          "id": "manual-1787653248907-bmihosi4b9e",
+          "filename": "1787653246819-Screenshot-2026-08-25-at-11.48.07.webp",
+          "url": "https://raw.githubusercontent.com/Lepigonia/Lepigonia/main/public/uploads/1787653246819-Screenshot-2026-08-25-at-11.48.07.webp",
+          "source": "manual",
+          "createdAt": "2026-08-25T10:20:48.907Z"
+        }
+      ]
     }
   ]
 }
