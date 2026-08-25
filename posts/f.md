@@ -9,4 +9,6 @@ image: /uploads/1787612951139-Screenshot-2026-08-15-at-19.23.49.webp
 excerpt: Finnland mit Lothar
 ---
 
+<figure class="story-inline story-inline-left"><img src="https://86ec824d1amijkwd.public.blob.vercel-storage.com/gallery/portugal/1787655917793-IMG_4135-QpGhVsw2neY65oXaP1Qe0xcasmZZdX.jpeg" alt="Reisefoto" loading="lazy" /></figure>
+
 Als ich nach Finnland fuhr
