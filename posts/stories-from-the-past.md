@@ -42,7 +42,7 @@ About a year ago, that part of the story came to a tragic and unexpected end. Lo
 Moments like that often force you to rethink direction and purpose.
 
 
-<figure class="story-inline story-inline-right"><img src="https://86ec824d1amijkwd.public.blob.vercel-storage.com/gallery/portugal/1787655009846-IMG_4437-juu9TnkHfpL8np1LY9uUx0MRJfM9gI.jpeg" alt="This is Lothar my T4 Volkswagen Truck" loading="lazy" /><figcaption>This is Lothar my T4 Volkswagen Truck</figcaption></figure>
+
 
 
 *Looking Toward New Horizons*
