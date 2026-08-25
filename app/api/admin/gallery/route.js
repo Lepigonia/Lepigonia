@@ -7,11 +7,8 @@ export const dynamic = "force-dynamic";
 
 export async function GET(request) {
   if (!isAdmin(request)) return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
-  try {
-    return NextResponse.json(await getGallery({ syncPosts: true }));
-  } catch (error) {
-    return NextResponse.json({ error: error.message || "Galerie konnte nicht geladen werden." }, { status: 500 });
-  }
+  try { return NextResponse.json(await getGallery({ syncPosts: true })); }
+  catch (error) { return NextResponse.json({ error: error.message || "Galerie konnte nicht geladen werden." }, { status: 500 }); }
 }
 
 export async function POST(request) {
@@ -40,6 +37,8 @@ export async function POST(request) {
       if (!country) return NextResponse.json({ error: "Land nicht gefunden." }, { status: 404 });
       const duplicate = await db`SELECT id FROM gallery_countries WHERE slug=${newSlug} AND id<>${country.id} LIMIT 1`;
       if (duplicate.length) return NextResponse.json({ error: "Dieses Land existiert bereits." }, { status: 409 });
+      // Keep the same database id so every existing manual/blog image remains attached.
+      // The blog sync also preserves an existing post->country relation after a rename.
       await db`UPDATE gallery_countries SET slug=${newSlug},name=${name},updated_at=NOW() WHERE id=${country.id}`;
       return NextResponse.json({ ok: true, slug: newSlug });
     }
@@ -57,10 +56,12 @@ export async function POST(request) {
       const country = (await db`SELECT id FROM gallery_countries WHERE slug=${body.slug} LIMIT 1`)[0];
       if (!country) return NextResponse.json({ error: "Land nicht gefunden." }, { status: 404 });
       if (!body.url || !body.filename) return NextResponse.json({ error: "Bild-URL oder Dateiname fehlt." }, { status: 400 });
-      const id = `manual-${crypto.randomUUID()}`;
-      await db`INSERT INTO gallery_images (id,country_id,source,url,filename,storage,created_at)
-        VALUES (${id},${country.id},'manual',${body.url},${body.filename},'blob',NOW())
-        ON CONFLICT (country_id,source,filename) DO NOTHING`;
+      const source = body.source === "blog" ? "blog" : "manual";
+      const postSlug = source === "blog" ? (body.postSlug || null) : null;
+      const id = source === "blog" && postSlug ? `post-${postSlug}` : `manual-${crypto.randomUUID()}`;
+      await db`INSERT INTO gallery_images (id,country_id,source,post_slug,url,filename,storage,created_at)
+        VALUES (${id},${country.id},${source},${postSlug},${body.url},${body.filename},'blob',NOW())
+        ON CONFLICT (id) DO UPDATE SET country_id=EXCLUDED.country_id,url=EXCLUDED.url,filename=EXCLUDED.filename,storage=EXCLUDED.storage`;
       return NextResponse.json({ ok: true, url: body.url, id });
     }
 
@@ -74,7 +75,5 @@ export async function POST(request) {
     }
 
     return NextResponse.json({ error: "Unbekannte Aktion." }, { status: 400 });
-  } catch (error) {
-    return NextResponse.json({ error: error.message || "Galerie konnte nicht gespeichert werden." }, { status: 500 });
-  }
+  } catch (error) { return NextResponse.json({ error: error.message || "Galerie konnte nicht gespeichert werden." }, { status: 500 }); }
 }
