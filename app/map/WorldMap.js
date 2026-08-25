@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import "leaflet/dist/leaflet.css";
 
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>\"]/g, (char) => ({
@@ -9,24 +10,6 @@ function escapeHtml(value) {
     ">": "&gt;",
     "\"": "&quot;",
   }[char] || char));
-}
-
-function ensureLeafletCss() {
-  if (document.querySelector("style[data-leaflet-critical]")) return;
-  const style = document.createElement("style");
-  style.dataset.leafletCritical = "true";
-  style.textContent = `
-    .leaflet-pane,.leaflet-tile,.leaflet-marker-icon,.leaflet-marker-shadow,.leaflet-tile-container,.leaflet-map-pane svg,.leaflet-map-pane canvas{position:absolute;left:0;top:0}
-    .leaflet-container{overflow:hidden;position:relative;outline:0}
-    .leaflet-tile-pane{z-index:200}.leaflet-overlay-pane{z-index:400}.leaflet-shadow-pane{z-index:500}.leaflet-marker-pane{z-index:600}.leaflet-tooltip-pane{z-index:650}.leaflet-popup-pane{z-index:700}
-    .leaflet-tile-container{white-space:nowrap}.leaflet-tile{max-width:none!important;width:256px;height:256px;user-select:none;-webkit-user-drag:none}
-    .leaflet-container img{max-width:none!important}
-    .leaflet-control{position:relative;z-index:800;float:left;clear:both}.leaflet-top,.leaflet-bottom{position:absolute;z-index:1000;pointer-events:none}.leaflet-top{top:0}.leaflet-bottom{bottom:0}.leaflet-left{left:0}.leaflet-right{right:0}.leaflet-control{pointer-events:auto}
-    .leaflet-control-zoom a{display:block;width:30px;height:30px;line-height:30px;text-align:center;text-decoration:none;font: bold 18px/30px Arial,sans-serif;color:#222;background:#fff;border-bottom:1px solid #ddd}.leaflet-control-zoom a:first-child{border-radius:4px 4px 0 0}.leaflet-control-zoom a:last-child{border-radius:0 0 4px 4px;border-bottom:0}.leaflet-control-zoom{box-shadow:0 1px 5px rgba(0,0,0,.35);margin:10px}
-    .leaflet-popup{position:absolute;text-align:center}.leaflet-popup-content-wrapper{padding:1px;text-align:left}.leaflet-popup-content{margin:13px 19px;line-height:1.4}.leaflet-popup-tip{width:17px;height:17px;padding:1px;transform:rotate(45deg);margin:-10px auto 0}.leaflet-popup-close-button{position:absolute;right:0;top:0;padding:4px 4px 0 0;border:0;background:transparent}
-    .leaflet-zoom-animated{transform-origin:0 0}.leaflet-zoom-hide{visibility:hidden}
-  `;
-  document.head.appendChild(style);
 }
 
 export default function WorldMap({ posts = [] }) {
@@ -38,40 +21,41 @@ export default function WorldMap({ posts = [] }) {
     let resizeObserver;
     let resizeTimer;
     let cancelled = false;
-    let cssLink;
 
     const invalidate = () => {
       if (!map) return;
-      window.requestAnimationFrame(() => map && map.invalidateSize({ pan: false, animate: false }));
+      window.requestAnimationFrame(() => {
+        if (map) map.invalidateSize({ pan: false, animate: false });
+      });
     };
 
-    const load = () => {
-      if (cancelled || !window.L || !ref.current || map) return;
+    const init = async () => {
+      if (cancelled || !ref.current) return;
 
-      ensureLeafletCss();
-      map = window.L.map(ref.current, {
+      // Load Leaflet from the installed package instead of a runtime CDN script.
+      // This prevents the map from rendering with controls but without its tile layer.
+      const L = (await import("leaflet")).default;
+      if (cancelled || !ref.current) return;
+
+      // Leaflet's default marker assets are not used; Lepigonia has custom markers.
+      map = L.map(ref.current, {
         worldCopyJump: true,
         scrollWheelZoom: false,
         zoomControl: true,
         minZoom: 2,
         maxZoom: 19,
         preferCanvas: false,
+        attributionControl: true,
       });
 
-      const tiles = window.L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: "&copy; OpenStreetMap contributors",
         maxZoom: 19,
         tileSize: 256,
         keepBuffer: 3,
         updateWhenIdle: false,
         updateWhenZooming: false,
-      });
-
-      tiles.on("tileerror", (event) => {
-        if (ref.current) ref.current.dataset.tileError = "true";
-        console.warn("OpenStreetMap tile failed to load", event?.tile?.src || "");
-      });
-      tiles.addTo(map);
+      }).addTo(map);
 
       const valid = posts
         .map((post, index) => ({ ...post, _index: index }))
@@ -89,7 +73,7 @@ export default function WorldMap({ posts = [] }) {
           bounds.push([lat, lng]);
           routePoints.push([lat, lng]);
 
-          const icon = window.L.divIcon({
+          const icon = L.divIcon({
             className: "lepigonia-map-marker-wrap",
             html: `<span class="lepigonia-map-marker"><span>${index + 1}</span></span>`,
             iconSize: [34, 34],
@@ -97,7 +81,7 @@ export default function WorldMap({ posts = [] }) {
             popupAnchor: [0, -18],
           });
 
-          const marker = window.L.marker([lat, lng], { icon }).addTo(map);
+          const marker = L.marker([lat, lng], { icon }).addTo(map);
           marker.bindPopup(`
             <article class="map-popup">
               <span class="map-popup-kicker">${escapeHtml(post.location || "Reisestopp")}</span>
@@ -109,7 +93,7 @@ export default function WorldMap({ posts = [] }) {
         });
 
         if (routePoints.length > 1) {
-          route = window.L.polyline(routePoints, {
+          route = L.polyline(routePoints, {
             color: "#171715",
             weight: 1.5,
             opacity: 0.42,
@@ -125,7 +109,7 @@ export default function WorldMap({ posts = [] }) {
       invalidate();
       window.setTimeout(invalidate, 100);
       window.setTimeout(invalidate, 500);
-      window.setTimeout(() => map?.invalidateSize({ pan: false }), 1200);
+      window.setTimeout(invalidate, 1200);
 
       if (typeof ResizeObserver !== "undefined") {
         resizeObserver = new ResizeObserver(() => {
@@ -138,45 +122,10 @@ export default function WorldMap({ posts = [] }) {
       }
     };
 
-    const ensureLeaflet = () => {
-      ensureLeafletCss();
-      const existingLink = document.querySelector("link[data-leaflet]");
-      const cssReady = existingLink
-        ? (existingLink.sheet ? Promise.resolve() : new Promise((resolve) => {
-            existingLink.addEventListener("load", resolve, { once: true });
-            window.setTimeout(resolve, 1500);
-          }))
-        : new Promise((resolve) => {
-            cssLink = document.createElement("link");
-            cssLink.rel = "stylesheet";
-            cssLink.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-            cssLink.dataset.leaflet = "true";
-            cssLink.onload = resolve;
-            cssLink.onerror = resolve;
-            document.head.appendChild(cssLink);
-          });
-
-      if (window.L) {
-        cssReady.then(load);
-        return;
-      }
-
-      const existingScript = document.querySelector("script[data-leaflet]");
-      if (existingScript) {
-        existingScript.addEventListener("load", () => cssReady.then(load), { once: true });
-        return;
-      }
-
-      const script = document.createElement("script");
-      script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
-      script.dataset.leaflet = "true";
-      script.async = true;
-      script.onload = () => cssReady.then(load);
-      script.onerror = () => console.error("Leaflet failed to load");
-      document.body.appendChild(script);
-    };
-
-    ensureLeaflet();
+    init().catch((error) => {
+      console.error("Lepigonia world map failed to initialize", error);
+      if (ref.current) ref.current.dataset.mapError = "true";
+    });
 
     return () => {
       cancelled = true;
