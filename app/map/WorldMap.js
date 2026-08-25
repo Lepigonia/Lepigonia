@@ -42,8 +42,6 @@ export default function WorldMap({ posts = [] }) {
         attributionControl: true,
       });
 
-      // Primary source: OpenStreetMap. If the browser/network cannot reach
-      // the OSM tile host, immediately fall back to CARTO's public OSM-based tiles.
       const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: "&copy; OpenStreetMap contributors",
         maxZoom: 19,
@@ -56,30 +54,19 @@ export default function WorldMap({ posts = [] }) {
       let fallbackAdded = false;
       let tileErrors = 0;
       const addFallback = () => {
-        if (fallbackAdded || cancelled) return;
+        if (fallbackAdded || cancelled || !map) return;
         fallbackAdded = true;
-        const fallback = L.tileLayer(
-          "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-          {
-            attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
-            maxZoom: 19,
-            tileSize: 256,
-            keepBuffer: 3,
-          },
-        ).addTo(map);
-        fallback.once("load", () => {
-          if (ref.current) delete ref.current.dataset.mapError;
-          invalidate();
-        });
+        L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+          attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
+          maxZoom: 19,
+          tileSize: 256,
+          keepBuffer: 3,
+        }).addTo(map);
       };
 
       osm.on("tileerror", () => {
         tileErrors += 1;
         if (tileErrors >= 2) addFallback();
-      });
-      osm.once("load", () => {
-        if (ref.current) delete ref.current.dataset.mapError;
-        invalidate();
       });
 
       const valid = posts
@@ -125,7 +112,9 @@ export default function WorldMap({ posts = [] }) {
             dashArray: "5 8",
             interactive: false,
           }).addTo(map);
-          route.bringToBack();
+          // Do not call bringToBack() here: immediately after creation the
+          // SVG path can still be detached while Leaflet is laying out panes.
+          // The route already lives in the overlay pane below the marker pane.
         }
 
         map.fitBounds(bounds, { padding: [55, 55], maxZoom: 5 });
