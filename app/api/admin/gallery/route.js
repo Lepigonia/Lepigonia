@@ -15,6 +15,7 @@ export async function POST(request) {
   if (!isAdmin(request)) return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
   try {
     await seedGalleryFromLegacy();
+    await ensureDatabase();
     const db = sql();
     const body = await request.json();
 
@@ -22,9 +23,11 @@ export async function POST(request) {
       const name = String(body.name || "").trim();
       const slug = slugifyCountry(name);
       if (!name || !slug) return NextResponse.json({ error: "Bitte ein Land eingeben." }, { status: 400 });
-      const existing = await db`SELECT id FROM gallery_countries WHERE slug=${slug} LIMIT 1`;
+      const existing = await db`SELECT id FROM gallery_countries WHERE slug=${slug} OR lower(name)=lower(${name}) LIMIT 1`;
       if (existing.length) return NextResponse.json({ error: "Dieses Land existiert bereits." }, { status: 409 });
-      await db`INSERT INTO gallery_countries (id,slug,name) VALUES (${slug},${slug},${name})`;
+      const alias = await db`SELECT country_id FROM gallery_country_aliases WHERE alias_slug=${slug} LIMIT 1`;
+      if (alias.length) return NextResponse.json({ error: "Dieser Ländername ist bereits als frühere Bezeichnung vergeben." }, { status: 409 });
+      await db`INSERT INTO gallery_countries (id,slug,name) VALUES (${crypto.randomUUID()},${slug},${name})`;
       return NextResponse.json({ ok: true, slug });
     }
 
@@ -33,13 +36,17 @@ export async function POST(request) {
       const name = String(body.name || "").trim();
       const newSlug = slugifyCountry(name);
       if (!name || !newSlug) return NextResponse.json({ error: "Bitte ein Land eingeben." }, { status: 400 });
-      const country = (await db`SELECT id FROM gallery_countries WHERE slug=${oldSlug} LIMIT 1`)[0];
+      const country = (await db`SELECT id,slug FROM gallery_countries WHERE slug=${oldSlug} LIMIT 1`)[0];
       if (!country) return NextResponse.json({ error: "Land nicht gefunden." }, { status: 404 });
       const duplicate = await db`SELECT id FROM gallery_countries WHERE slug=${newSlug} AND id<>${country.id} LIMIT 1`;
       if (duplicate.length) return NextResponse.json({ error: "Dieses Land existiert bereits." }, { status: 409 });
-      // Keep the same database id so every existing manual/blog image remains attached.
-      // The blog sync also preserves an existing post->country relation after a rename.
+      const aliasDuplicate = await db`SELECT country_id FROM gallery_country_aliases WHERE alias_slug=${newSlug} AND country_id<>${country.id} LIMIT 1`;
+      if (aliasDuplicate.length) return NextResponse.json({ error: "Dieser Ländername ist bereits als Alias vergeben." }, { status: 409 });
+      if (country.slug !== newSlug) {
+        await db`INSERT INTO gallery_country_aliases(alias_slug,country_id) VALUES(${country.slug},${country.id}) ON CONFLICT(alias_slug) DO UPDATE SET country_id=EXCLUDED.country_id`;
+      }
       await db`UPDATE gallery_countries SET slug=${newSlug},name=${name},updated_at=NOW() WHERE id=${country.id}`;
+      await db`DELETE FROM gallery_country_aliases WHERE alias_slug=${newSlug}`;
       return NextResponse.json({ ok: true, slug: newSlug });
     }
 
@@ -58,7 +65,7 @@ export async function POST(request) {
       if (!body.url || !body.filename) return NextResponse.json({ error: "Bild-URL oder Dateiname fehlt." }, { status: 400 });
       const source = body.source === "blog" ? "blog" : "manual";
       const postSlug = source === "blog" ? (body.postSlug || null) : null;
-      const id = source === "blog" && postSlug ? `post-${postSlug}` : `manual-${crypto.randomUUID()}`;
+      const id = source === "blog" && postSlug ? `post-${postSlug}-${Buffer.from(body.url).toString("base64url").slice(-32)}` : `manual-${crypto.randomUUID()}`;
       await db`INSERT INTO gallery_images (id,country_id,source,post_slug,url,filename,storage,created_at)
         VALUES (${id},${country.id},${source},${postSlug},${body.url},${body.filename},'blob',NOW())
         ON CONFLICT (id) DO UPDATE SET country_id=EXCLUDED.country_id,url=EXCLUDED.url,filename=EXCLUDED.filename,storage=EXCLUDED.storage`;
