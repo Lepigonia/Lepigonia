@@ -15,38 +15,30 @@ export const blankPost = () => ({
   content: "",
 });
 
-export function useAdminEditorState({ about, setAbout, countries, clearMessages }) {
+export function useAdminEditorState({ setAbout, countries }) {
   const [post, setPost] = useState(blankPost);
   const [section, setSection] = useState("stories");
   const [gallery, setGallery] = useState("");
 
-  const reset = () => {
-    setPost(blankPost());
-    clearMessages();
-  };
-
   const newStory = () => {
     setSection("stories");
-    reset();
+    setPost(blankPost());
   };
 
   const selectStory = (value) => {
     setSection("stories");
     setPost(value);
-    clearMessages();
   };
 
   const selectCountry = (country) => {
     setSection("gallery");
     setGallery(country.slug);
     setPost(blankPost());
-    clearMessages();
   };
 
   const selectAbout = () => {
     setSection("about");
     setPost(blankPost());
-    clearMessages();
   };
 
   const newCountry = (createCountry) => {
@@ -82,6 +74,5 @@ export function useAdminEditorState({ about, setAbout, countries, clearMessages 
     selectAbout,
     newCountry,
     updateAbout,
-    reset,
   };
 }
