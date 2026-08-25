@@ -21,3 +21,8 @@ Hier rechts vom Text
  
 
 <figure class="story-inline story-inline-right"><img src="https://86ec824d1amijkwd.public.blob.vercel-storage.com/gallery/portugal/1787655009846-IMG_4437-juu9TnkHfpL8np1LY9uUx0MRJfM9gI.jpeg" alt="Reisefoto" loading="lazy" /></figure>
+
+JETZT EIN BILD NICHT AUS ÖSTERREICH UNTER DEM TEXT 
+
+
+<figure class="story-inline story-inline-full"><img src="https://86ec824d1amijkwd.public.blob.vercel-storage.com/gallery/portugal/1787655019636-IMG_4441-N6Jz9aPQupSh0OHdnB9s7z4E1Ik1k8.jpeg" alt="Reisefoto" loading="lazy" /></figure>
