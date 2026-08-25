@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { del } from "@vercel/blob";
 import { isAdmin } from "../../../../lib/admin";
-import { getGallery, ensureDatabase, seedGalleryFromLegacy, sql, slugifyCountry } from "../../../../lib/db";
+import { getGallery, ensureDatabase, sql, slugifyCountry } from "../../../../lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +14,6 @@ export async function GET(request) {
 export async function POST(request) {
   if (!isAdmin(request)) return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
   try {
-    await seedGalleryFromLegacy();
     await ensureDatabase();
     const db = sql();
     const body = await request.json();
