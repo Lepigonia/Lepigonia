@@ -1,8 +1,8 @@
 ---
 title: Test 2.0
 date: 2026-08-25
-location: Arabien
-country: arabien
+location: Österreich
+country: Österreich
 lat: 47.355871
 lng: 13.931953
 image: https://86ec824d1amijkwd.public.blob.vercel-storage.com/blog/1787661006638-IMG_4566-XKJpcWOWKIsr1PGrfsNEfGVexXjGJJ.png
