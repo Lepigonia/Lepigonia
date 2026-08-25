@@ -24,20 +24,14 @@ export default function WorldMap({ posts = [] }) {
 
     const invalidate = () => {
       if (!map) return;
-      window.requestAnimationFrame(() => {
-        if (map) map.invalidateSize({ pan: false, animate: false });
-      });
+      window.requestAnimationFrame(() => map?.invalidateSize({ pan: false, animate: false }));
     };
 
     const init = async () => {
       if (cancelled || !ref.current) return;
-
-      // Load Leaflet from the installed package instead of a runtime CDN script.
-      // This prevents the map from rendering with controls but without its tile layer.
       const L = (await import("leaflet")).default;
       if (cancelled || !ref.current) return;
 
-      // Leaflet's default marker assets are not used; Lepigonia has custom markers.
       map = L.map(ref.current, {
         worldCopyJump: true,
         scrollWheelZoom: false,
@@ -48,7 +42,9 @@ export default function WorldMap({ posts = [] }) {
         attributionControl: true,
       });
 
-      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      // Primary source: OpenStreetMap. If the browser/network cannot reach
+      // the OSM tile host, immediately fall back to CARTO's public OSM-based tiles.
+      const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: "&copy; OpenStreetMap contributors",
         maxZoom: 19,
         tileSize: 256,
@@ -56,6 +52,35 @@ export default function WorldMap({ posts = [] }) {
         updateWhenIdle: false,
         updateWhenZooming: false,
       }).addTo(map);
+
+      let fallbackAdded = false;
+      let tileErrors = 0;
+      const addFallback = () => {
+        if (fallbackAdded || cancelled) return;
+        fallbackAdded = true;
+        const fallback = L.tileLayer(
+          "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+          {
+            attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
+            maxZoom: 19,
+            tileSize: 256,
+            keepBuffer: 3,
+          },
+        ).addTo(map);
+        fallback.once("load", () => {
+          if (ref.current) delete ref.current.dataset.mapError;
+          invalidate();
+        });
+      };
+
+      osm.on("tileerror", () => {
+        tileErrors += 1;
+        if (tileErrors >= 2) addFallback();
+      });
+      osm.once("load", () => {
+        if (ref.current) delete ref.current.dataset.mapError;
+        invalidate();
+      });
 
       const valid = posts
         .map((post, index) => ({ ...post, _index: index }))
