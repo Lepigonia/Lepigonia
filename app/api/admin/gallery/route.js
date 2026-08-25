@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getGithubFile, putGithubFile, putGithubBinary, deleteGithubFile, isAdmin } from "../../../../lib/admin";
+import { getGithubFile, putGithubFile, deleteGithubFile, isAdmin } from "../../../../lib/admin";
 import { slugifyCountry } from "../../../../lib/gallery";
 import { getPosts } from "../../../../lib/posts";
 
@@ -8,10 +8,9 @@ async function readData() {
   catch { return { data: { countries: [] }, sha: null }; }
 }
 async function writeData(data, sha) { return putGithubFile("data/gallery.json", JSON.stringify(data, null, 2) + "\n", "Update gallery", sha); }
-
+function rawUrl(filename) { return `https://raw.githubusercontent.com/Lepigonia/Lepigonia/main/public/uploads/${encodeURIComponent(filename)}`; }
 function withBlogImages(data) {
   const posts = getPosts();
-  // Blog images are derived data: remove stale/duplicate blog entries first and rebuild exactly once per post.
   const countries = data.countries.map(c => ({ ...c, images: (c.images || []).filter(i => i.source !== "blog") }));
   for (const post of posts) {
     if (!post.country || !post.image) continue;
@@ -21,12 +20,10 @@ function withBlogImages(data) {
   }
   return { countries };
 }
-
 export async function GET(request) {
   if (!isAdmin(request)) return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
   return NextResponse.json(withBlogImages((await readData()).data));
 }
-
 export async function POST(request) {
   if (!isAdmin(request)) return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
   try {
@@ -47,9 +44,10 @@ export async function POST(request) {
     }
     if (body.action === "image-register") {
       const c = data.countries.find(x => x.slug === body.slug); if (!c) return NextResponse.json({ error: "Land nicht gefunden." }, { status: 404 });
-      if (!body.url || !body.filename) return NextResponse.json({ error: "Bild-URL fehlt." }, { status: 400 });
-      c.images.push({ id: `manual-${Date.now()}-${Math.random().toString(36).slice(2)}`, filename: body.filename, url: body.url, source: "manual", createdAt: new Date().toISOString() });
-      await writeData(data, sha); return NextResponse.json({ ok: true });
+      if (!body.url || !body.filename) return NextResponse.json({ error: "Bild-URL oder Dateiname fehlt." }, { status: 400 });
+      const exists = c.images.some(i => i.source === "manual" && i.filename === body.filename);
+      if (!exists) c.images.push({ id: `manual-${Date.now()}-${Math.random().toString(36).slice(2)}`, filename: body.filename, url: rawUrl(body.filename), source: "manual", createdAt: new Date().toISOString() });
+      await writeData(data, sha); return NextResponse.json({ ok: true, url: rawUrl(body.filename) });
     }
     if (body.action === "image-delete") {
       const c = data.countries.find(x => x.slug === body.slug); const image = c?.images?.find(i => i.id === body.id);
