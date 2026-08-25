@@ -17,7 +17,11 @@ Ich erzähle hier die Geschichte vom 2. Blogpost. das ist ein Test und sollte al
 
 
 
-<figure class="story-inline story-inline-right"><img src="https://86ec824d1amijkwd.public.blob.vercel-storage.com/gallery/portugal/1787655019636-IMG_4441-N6Jz9aPQupSh0OHdnB9s7z4E1Ik1k8.jpeg" alt="Reisefoto" loading="lazy" /></figure>
+
+
+<figure class="story-inline story-inline-right"><img src="https://86ec824d1amijkwd.public.blob.vercel-storage.com/blog-inline/1787664296379-IMG_0086-dhmIHFTe54dLXh6X13KMiBVlPw8m9Y.jpeg" alt="Reisefoto" loading="lazy" /></figure>
+
+
 
 
 Hier rechts vom Text
