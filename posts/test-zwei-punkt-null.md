@@ -14,12 +14,13 @@ Ich erzähle hier die Geschichte vom 2. Blogpost. das ist ein Test und sollte al
 
 <figure class="story-inline story-inline-full"><img src="https://86ec824d1amijkwd.public.blob.vercel-storage.com/gallery/portugal/1787654909649-0DAC8F84-F7FB-4003-B64E-006590E5D0D5-NRAjKApOL2PR4bxGvyP0l2R8V35q5Q.jpeg" alt="Reisefoto" loading="lazy" /></figure>
 
-
-<figure class="story-inline story-inline-right"><img src="https://86ec824d1amijkwd.public.blob.vercel-storage.com/gallery/portugal/1787655009846-IMG_4437-juu9TnkHfpL8np1LY9uUx0MRJfM9gI.jpeg" alt="Reisefoto" loading="lazy" /></figure>
 Hier rechts vom Text
 
 
 
+ 
+
+<figure class="story-inline story-inline-right"><img src="https://86ec824d1amijkwd.public.blob.vercel-storage.com/gallery/portugal/1787655009846-IMG_4437-juu9TnkHfpL8np1LY9uUx0MRJfM9gI.jpeg" alt="Reisefoto" loading="lazy" /></figure>
 
 JETZT EIN BILD NICHT AUS ÖSTERREICH UNTER DEM TEXT 
 
