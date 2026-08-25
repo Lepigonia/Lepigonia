@@ -1,0 +1,36 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import { adminApi } from "../lib/admin-api";
+
+export function useAdminData() {
+  const [ready, setReady] = useState(null);
+  const [posts, setPosts] = useState([]);
+  const [countries, setCountries] = useState([]);
+  const [about, setAbout] = useState(null);
+  const [error, setError] = useState("");
+
+  const load = useCallback(async () => {
+    setError("");
+    try {
+      const [postData, galleryData, aboutData] = await Promise.all([
+        adminApi.posts(),
+        adminApi.gallery(),
+        adminApi.about(),
+      ]);
+      setPosts(postData.posts || []);
+      setCountries(galleryData.countries || []);
+      setAbout(aboutData);
+      setReady(true);
+      return { posts: postData.posts || [], countries: galleryData.countries || [], about: aboutData };
+    } catch (err) {
+      if (err.status === 401 || err.status === 403) setReady(false);
+      else setError(err.message);
+      return null;
+    }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  return { ready, posts, setPosts, countries, setCountries, about, setAbout, error, setError, reload: load };
+}
