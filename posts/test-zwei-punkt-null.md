@@ -16,7 +16,7 @@ Ich erzähle hier die Geschichte vom 2. Blogpost. das ist ein Test und sollte al
 
 Hier rechts vom Text
 
-<figure class="story-inline story-inline-full"><img src="https://86ec824d1amijkwd.public.blob.vercel-storage.com/gallery/portugal/1787655009846-IMG_4437-juu9TnkHfpL8np1LY9uUx0MRJfM9gI.jpeg" alt="Reisefoto" loading="lazy" /></figure>
+
 
  
 
