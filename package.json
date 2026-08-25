@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test:api": "node scripts/run-api-smoke-test.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "latest",
