@@ -10,7 +10,25 @@ export default function AdminGalleryEditor({ country, files, status, error, onFi
       <p className="upload-hint">{files.length ? `${files.length} Bilder ausgewählt – Upload läuft …` : "Große iPhone/iPhoto-Originale werden direkt zu Vercel Blob hochgeladen."}</p>
       {status && <p className="status">{status}</p>}
       {error && <p className="admin-error" style={{ whiteSpace: "pre-line" }}>{error}</p>}
-      <div className="story-grid">{country.images?.map((image) => <div className="story-card" key={image.id}><div className="story-media"><img src={image.url} alt={image.title || "Galeriebild"} /></div><div className="story-meta"><span>{image.source === "manual" ? "Manuell" : "Blogartikel"}</span>{image.source === "manual" && <button className="danger" type="button" onClick={() => { if (confirm("Bild wirklich löschen?")) onAction({ action: "image-delete", slug: country.slug, id: image.id }); }}>Löschen</button>}</div></div>)}</div>
+      <div className="story-grid">{country.images?.map((image) => {
+        const orphanedBlogImage = image.source === "blog" && image.postSlug && !image.postExists;
+        const canDelete = image.source === "manual" || orphanedBlogImage;
+        return (
+          <div className={`story-card${orphanedBlogImage ? " story-card--orphan" : ""}`} key={image.id}>
+            <div className="story-media"><img src={image.url} alt={image.title || "Galeriebild"} /></div>
+            <div className="story-meta">
+              <span>{image.source === "manual" ? "Manuell" : orphanedBlogImage ? "Verwaistes Blogbild" : "Blogartikel"}</span>
+              {image.source === "blog" && image.postSlug && <small>{orphanedBlogImage ? `Artikel nicht mehr vorhanden: ${image.postSlug}` : image.postSlug}</small>}
+              {canDelete && <button className="danger" type="button" onClick={() => {
+                const message = orphanedBlogImage
+                  ? "Dieses Bild gehört zu einem gelöschten Blogartikel. Bild und Blob wirklich endgültig löschen?"
+                  : "Bild wirklich löschen?";
+                if (confirm(message)) onAction({ action: "image-delete", slug: country.slug, id: image.id });
+              }}>Löschen</button>}
+            </div>
+          </div>
+        );
+      })}</div>
       <hr />
       <div className="field-row gallery-settings">
         <label>Land umbenennen<input defaultValue={country.name} onBlur={(e) => { if (e.target.value !== country.name) onAction({ action: "country-update", slug: country.slug, name: e.target.value }); }} /></label>
