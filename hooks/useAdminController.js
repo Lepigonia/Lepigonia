@@ -18,35 +18,37 @@ export function useAdminController(data) {
     setSection: editor.setSection,
   });
 
-  const clearMessages = actions.clearMessages;
+  const { newStory: resetStory, selectStory: chooseStory, selectCountry: chooseCountry, selectAbout: chooseAbout } = editor;
+  const { galleryAction, deletePost: removePost, clearMessages } = actions;
+
   const newStory = useCallback(() => {
     clearMessages();
-    editor.newStory();
-  }, [clearMessages, editor]);
+    resetStory();
+  }, [clearMessages, resetStory]);
 
   const selectStory = useCallback((value) => {
     clearMessages();
-    editor.selectStory(value);
-  }, [clearMessages, editor]);
+    chooseStory(value);
+  }, [clearMessages, chooseStory]);
 
   const selectCountry = useCallback((country) => {
     clearMessages();
-    editor.selectCountry(country);
-  }, [clearMessages, editor]);
+    chooseCountry(country);
+  }, [clearMessages, chooseCountry]);
 
   const selectAbout = useCallback(() => {
     clearMessages();
-    editor.selectAbout();
-  }, [clearMessages, editor]);
+    chooseAbout();
+  }, [clearMessages, chooseAbout]);
 
   const newCountry = useCallback(() => {
     clearMessages();
-    editor.newCountry(actions.galleryAction);
-  }, [actions.galleryAction, clearMessages, editor]);
+    editor.newCountry(galleryAction);
+  }, [clearMessages, editor, galleryAction]);
 
   const deletePost = useCallback(() => {
-    actions.deletePost(editor.post.slug, blankPost);
-  }, [actions.deletePost, editor.post.slug]);
+    removePost(editor.post.slug, blankPost);
+  }, [removePost, editor.post.slug]);
 
   return {
     editor,
