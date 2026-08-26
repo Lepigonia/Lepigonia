@@ -45,7 +45,7 @@ export function Navbar() {
     document.documentElement.lang = lang.toLowerCase();
     document.documentElement.dataset.language = lang;
     const onScroll = () => setScrolled(window.scrollY > 24);
-    const onKey = (event) => { if (event.key === "Escape") setOpen(false); };
+    const onKey = event => { if (event.key === "Escape") setOpen(false); };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("keydown", onKey);
@@ -69,14 +69,7 @@ export function Navbar() {
           {login}
           <LanguageSwitch />
         </nav>
-        <button
-          className="menu-toggle"
-          type="button"
-          aria-expanded={open}
-          aria-controls="mobile-menu"
-          aria-label={open ? "Close menu" : "Open menu"}
-          onClick={() => setOpen(v => !v)}
-        >
+        <button className="menu-toggle" type="button" aria-expanded={open} aria-controls="mobile-menu" aria-label={open ? "Close menu" : "Open menu"} onClick={() => setOpen(v => !v)}>
           <span /><span /><span className="sr-only"><T en="Menu" de="Menü" /></span>
         </button>
       </div>
@@ -110,7 +103,8 @@ export function NewsletterModal() {
     };
     openFromHash();
     window.addEventListener("hashchange", openFromHash);
-    if (!localStorage.getItem("lepigonia-newsletter-seen") && window.location.hash !== "#newsletter") {
+    const isHome = window.location.pathname === "/";
+    if (isHome && !localStorage.getItem("lepigonia-newsletter-seen") && window.location.hash !== "#newsletter") {
       const timer = setTimeout(() => setVisible(true), 3200);
       return () => { clearTimeout(timer); window.removeEventListener("hashchange", openFromHash); };
     }
@@ -119,7 +113,7 @@ export function NewsletterModal() {
 
   useEffect(() => {
     if (!visible) return;
-    const onKey = (event) => { if (event.key === "Escape") close(); };
+    const onKey = event => { if (event.key === "Escape") close(); };
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
     return () => {
@@ -139,11 +133,7 @@ export function NewsletterModal() {
     if (status === "loading") return;
     setStatus("loading");
     try {
-      const response = await fetch("/api/newsletter", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
+      const response = await fetch("/api/newsletter", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email }) });
       if (!response.ok) throw new Error("Signup failed");
       setStatus("success");
       localStorage.setItem("lepigonia-newsletter-seen", "1");
