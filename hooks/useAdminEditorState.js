@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 export const blankPost = () => ({
   slug: "",
@@ -20,33 +20,33 @@ export function useAdminEditorState({ setAbout, countries }) {
   const [section, setSection] = useState("stories");
   const [gallery, setGallery] = useState("");
 
-  const newStory = () => {
+  const newStory = useCallback(() => {
     setSection("stories");
     setPost(blankPost());
-  };
+  }, []);
 
-  const selectStory = (value) => {
+  const selectStory = useCallback((value) => {
     setSection("stories");
     setPost(value);
-  };
+  }, []);
 
-  const selectCountry = (country) => {
+  const selectCountry = useCallback((country) => {
     setSection("gallery");
     setGallery(country.slug);
     setPost(blankPost());
-  };
+  }, []);
 
-  const selectAbout = () => {
+  const selectAbout = useCallback(() => {
     setSection("about");
     setPost(blankPost());
-  };
+  }, []);
 
-  const newCountry = (createCountry) => {
+  const newCountry = useCallback((createCountry) => {
     const name = prompt("Neues Land:");
     if (name) createCountry({ action: "country-create", name });
-  };
+  }, []);
 
-  const updateAbout = (language, field, value, index) => {
+  const updateAbout = useCallback((language, field, value, index) => {
     setAbout((current) => {
       const localized = { ...(current[language] || {}) };
       if (field === "paragraphs") {
@@ -58,7 +58,12 @@ export function useAdminEditorState({ setAbout, countries }) {
       }
       return { ...current, [language]: localized };
     });
-  };
+  }, [setAbout]);
+
+  const currentCountry = useMemo(
+    () => countries.find((country) => country.slug === gallery),
+    [countries, gallery]
+  );
 
   return {
     post,
@@ -67,7 +72,7 @@ export function useAdminEditorState({ setAbout, countries }) {
     setSection,
     gallery,
     setGallery,
-    currentCountry: countries.find((country) => country.slug === gallery),
+    currentCountry,
     newStory,
     selectStory,
     selectCountry,
