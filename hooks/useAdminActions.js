@@ -1,8 +1,8 @@
 "use client";
 
-import { upload } from "@vercel/blob/client";
 import { useCallback, useState } from "react";
 import { adminApi } from "../lib/admin-api";
+import { createBlogUploadPath, createGalleryUploadPath, uploadAdminBlob } from "../lib/admin-upload";
 
 export function useAdminActions({ data, gallery, setGallery, setPost, setSection }) {
   const [galleryFiles, setGalleryFiles] = useState([]);
@@ -59,12 +59,9 @@ export function useAdminActions({ data, gallery, setGallery, setPost, setSection
     clearMessages();
     setStatus("Bild wird direkt zu Vercel Blob hochgeladen …");
     try {
-      const blob = await upload(`blog/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`, file, {
-        access: "public",
-        handleUploadUrl: "/api/admin/blob-upload",
-        multipart: true,
-        onUploadProgress: (progress) => setStatus(`Bild wird hochgeladen – ${Math.round(progress.percentage)}%`),
-      });
+      const blob = await uploadAdminBlob(createBlogUploadPath(file), file, (progress) =>
+        setStatus(`Bild wird hochgeladen – ${Math.round(progress.percentage)}%`)
+      );
       setPost((value) => ({ ...value, image: blob.url }));
       setStatus("Bild hochgeladen – jetzt speichern.");
     } catch (err) {
@@ -82,12 +79,9 @@ export function useAdminActions({ data, gallery, setGallery, setPost, setSection
     for (let index = 0; index < files.length; index += 1) {
       const file = files[index];
       try {
-        const blob = await upload(`gallery/${gallery}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`, file, {
-          access: "public",
-          handleUploadUrl: "/api/admin/blob-upload",
-          multipart: true,
-          onUploadProgress: (progress) => setStatus(`${index + 1} / ${files.length}: ${file.name} – ${Math.round(progress.percentage)}%`),
-        });
+        const blob = await uploadAdminBlob(createGalleryUploadPath(gallery, file), file, (progress) =>
+          setStatus(`${index + 1} / ${files.length}: ${file.name} – ${Math.round(progress.percentage)}%`)
+        );
         setStatus(`${index + 1} / ${files.length}: ${file.name} wird registriert …`);
         await adminApi.galleryAction({ action: "image-register", slug: gallery, url: blob.url, filename: blob.pathname, storage: "blob" });
         done += 1;
