@@ -15,7 +15,7 @@ export default function Home() {
         <div className="hero-scrim" />
         <div className="hero-content">
           <p className="eyebrow hero-eyebrow"><T en="Personal travel journal" de="Persönliches Reisetagebuch" /></p>
-          <h1><T en={<>Stories from places<br /><em>worth remembering.</em></>} de={<>Geschichten von Orten,<br /><em>die bleiben.</em>} /></h1>
+          <h1><T en={<>Stories from places<br /><em>worth remembering.</em></>} de={<>Geschichten von Orten,<br /><em>die bleiben.</em></>} /></h1>
           <p className="hero-copy"><T en="Slow travel, beautiful photography and the little moments that stay with you." de="Langsames Reisen, besondere Fotografie und die kleinen Momente, die bleiben." /></p>
           <Link href="#stories" className="editorial-link light"><T en="Explore stories" de="Geschichten entdecken" /> <span>→</span></Link>
         </div>
@@ -33,8 +33,8 @@ export default function Home() {
         {rest.length > 0 && <div className="story-grid">{rest.map((post, i) => <Reveal key={post.slug} className={`story-card ${i % 3 === 0 ? "story-card--wide" : ""}`}><Link href={`/blog/${post.slug}`}><div className="story-media"><Image src={post.image || "https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1400&q=80"} alt={post.title || "Travel story"} fill sizes="(max-width: 800px) 100vw, 45vw" /></div><div className="story-meta"><span>{post.location || "Journal"}</span><span>{post.date || ""}</span></div><h3>{post.title}</h3></Link></Reveal>)}</div>}
       </section>
 
-      <section className="statement"><div><p className="eyebrow"><T en="Why Lepigonia" de="Warum Lepigonia" /></p><p className="statement-text"><T en={<>“Some places are beautiful.<br /><em>Others become part of you.</em>”</>} de={<>„Manche Orte sind schön.<br /><em>Andere werden ein Teil von dir.“</em>} /></p></div></section>
-      <section id="newsletter" className="newsletter-strip section-wrap"><Reveal><p className="eyebrow"><T en="Stay close" de="Bleib dabei" /></p><h2><T en={<>Stories, when there’s<br /><em>something to tell.</em></>} de={<>Geschichten, wenn es<br /><em>etwas zu erzählen gibt.</em>} /></h2><a href="#newsletter" className="editorial-link"><T en="Join the journey" de="Mitreisen" /> <span>→</span></a></Reveal></section>
+      <section className="statement"><div><p className="eyebrow"><T en="Why Lepigonia" de="Warum Lepigonia" /></p><p className="statement-text"><T en={<>“Some places are beautiful.<br /><em>Others become part of you.</em>”</>} de={<>„Manche Orte sind schön.<br /><em>Andere werden ein Teil von dir.“</em></>} /></p></div></section>
+      <section id="newsletter" className="newsletter-strip section-wrap"><Reveal><p className="eyebrow"><T en="Stay close" de="Bleib dabei" /></p><h2><T en={<>Stories, when there’s<br /><em>something to tell.</em></>} de={<>Geschichten, wenn es<br /><em>etwas zu erzählen gibt.</em></>} /></h2><a href="#newsletter" className="editorial-link"><T en="Join the journey" de="Mitreisen" /> <span>→</span></a></Reveal></section>
     </main>
     <Footer /><NewsletterModal />
   </>;
