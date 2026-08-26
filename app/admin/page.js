@@ -6,31 +6,14 @@ import AdminGalleryEditor from "../../components/admin/AdminGalleryEditor";
 import AdminLogin from "../../components/admin/AdminLogin";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import AdminStoryEditor from "../../components/admin/AdminStoryEditor";
-import { useAdminActions } from "../../hooks/useAdminActions";
-import { blankPost, useAdminEditorState } from "../../hooks/useAdminEditorState";
+import { useAdminController } from "../../hooks/useAdminController";
 import { useAdminData } from "../../hooks/useAdminData";
 import "./admin.css";
 
 export default function Admin() {
   const data = useAdminData();
-  const editor = useAdminEditorState({
-    setAbout: data.setAbout,
-    countries: data.countries,
-  });
-  const actions = useAdminActions({
-    data,
-    gallery: editor.gallery,
-    setGallery: editor.setGallery,
-    setPost: editor.setPost,
-    setSection: editor.setSection,
-  });
-
-  const clearMessages = actions.clearMessages;
-  const newStory = () => { clearMessages(); editor.newStory(); };
-  const selectStory = (value) => { clearMessages(); editor.selectStory(value); };
-  const selectCountry = (country) => { clearMessages(); editor.selectCountry(country); };
-  const selectAbout = () => { clearMessages(); editor.selectAbout(); };
-  const newCountry = () => { clearMessages(); editor.newCountry(actions.galleryAction); };
+  const controller = useAdminController(data);
+  const { editor, actions } = controller;
 
   if (data.ready === null) return <div className="admin-loading">Lepigonia Admin …</div>;
   if (!data.ready) return <AdminLogin onSuccess={actions.refresh} />;
@@ -48,11 +31,11 @@ export default function Admin() {
           postSlug={editor.post.slug}
           gallery={editor.gallery}
           section={editor.section}
-          onNewStory={newStory}
-          onSelectStory={selectStory}
-          onNewCountry={newCountry}
-          onSelectCountry={selectCountry}
-          onAbout={selectAbout}
+          onNewStory={controller.newStory}
+          onSelectStory={controller.selectStory}
+          onNewCountry={controller.newCountry}
+          onSelectCountry={controller.selectCountry}
+          onAbout={controller.selectAbout}
         />
         {editor.section === "about" && (
           <AdminAboutEditor
@@ -71,7 +54,7 @@ export default function Admin() {
             error={actions.error}
             onChange={editor.setPost}
             onSave={(event) => actions.savePost(event, editor.post)}
-            onDelete={() => actions.deletePost(editor.post.slug, blankPost)}
+            onDelete={controller.deletePost}
             onHeroUpload={actions.uploadHero}
           />
         )}
