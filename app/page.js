@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getPosts } from "../lib/posts";
-import { Navbar, Footer, Reveal, T } from "../components/SiteChrome";
+import { Navbar, Footer, NewsletterModal, Reveal, T } from "../components/SiteChrome";
 
 export default function Home() {
   const posts = getPosts();
@@ -23,7 +23,7 @@ export default function Home() {
       </section>
 
       <section className="intro section-wrap">
-        <Reveal><p className="eyebrow"><T en="The journal" de="Das Journal" /></p><h2><T en={<>Travel slowly.<br /><em>Notice everything.</em></>} de={<>Langsam reisen.<br /><em>Alles wahrnehmen.</em>} /></h2></Reveal>
+        <Reveal><p className="eyebrow"><T en="The journal" de="Das Journal" /></p><h2><T en={<>Travel slowly.<br /><em>Notice everything.</em></>} de={<>Langsam reisen.<br /><em>Alles wahrnehmen.</em></>} /></h2></Reveal>
         <Reveal className="intro-copy"><p><T en="Lepigonia is a personal collection of journeys, places, food and fleeting moments from the road. Less itinerary, more memory." de="Lepigonia ist eine persönliche Sammlung von Reisen, Orten, Essen und flüchtigen Momenten unterwegs. Weniger Reiseplan, mehr Erinnerung." /></p><Link href="/about" className="editorial-link"><T en="A little about me" de="Ein wenig über mich" /> <span>→</span></Link></Reveal>
       </section>
 
@@ -33,9 +33,9 @@ export default function Home() {
         {rest.length > 0 && <div className="story-grid">{rest.map((post, i) => <Reveal key={post.slug} className={`story-card ${i % 3 === 0 ? "story-card--wide" : ""}`}><Link href={`/blog/${post.slug}`}><div className="story-media"><Image src={post.image || "https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1400&q=80"} alt={post.title || "Travel story"} fill sizes="(max-width: 800px) 100vw, 45vw" /></div><div className="story-meta"><span>{post.location || "Journal"}</span><span>{post.date || ""}</span></div><h3>{post.title}</h3></Link></Reveal>)}</div>}
       </section>
 
-      <section className="statement"><div><p className="eyebrow"><T en="Why Lepigonia" de="Warum Lepigonia" /></p><p className="statement-text"><T en={<>“Some places are beautiful.<br /><em>Others become part of you.</em>”</>} de={<>„Manche Orte sind schön.<br /><em>Andere werden ein Teil von dir.“</em>}</T></p></div></section>
-      <section id="newsletter" className="newsletter-strip section-wrap"><Reveal><p className="eyebrow"><T en="Stay close" de="Bleib dabei" /></p><h2><T en={<>Stories, when there’s<br /><em>something to tell.</em></>} de={<>Geschichten, wenn es<br /><em>etwas zu erzählen gibt.</em>} /></h2><a href="#newsletter" className="editorial-link"><T en="Join the journey" de="Mitreisen" /> <span>→</span></a></Reveal></section>
+      <section className="statement"><div><p className="eyebrow"><T en="Why Lepigonia" de="Warum Lepigonia" /></p><p className="statement-text"><T en={<>“Some places are beautiful.<br /><em>Others become part of you.</em>”</>} de={<>„Manche Orte sind schön.<br /><em>Andere werden ein Teil von dir.“</em></>} /></p></div></section>
+      <section id="newsletter" className="newsletter-strip section-wrap"><Reveal><p className="eyebrow"><T en="Stay close" de="Bleib dabei" /></p><h2><T en={<>Stories, when there’s<br /><em>something to tell.</em></>} de={<>Geschichten, wenn es<br /><em>etwas zu erzählen gibt.</em></>} /></h2><a href="#newsletter" className="editorial-link"><T en="Join the journey" de="Mitreisen" /> <span>→</span></a></Reveal></section>
     </main>
-    <Footer />
+    <Footer /><NewsletterModal />
   </>;
 }
