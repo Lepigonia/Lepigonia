@@ -88,9 +88,15 @@ export async function POST(request) {
         }
       }
 
+      // Never delete the underlying Blob if another gallery record still uses
+      // the exact same URL. This protects shared assets from one post's cleanup.
+      const shared = image.url
+        ? await db`SELECT id FROM gallery_images WHERE url=${image.url} AND id<>${image.id} LIMIT 1`
+        : [];
+
       await db`DELETE FROM gallery_images WHERE id=${image.id}`;
-      if (image.storage === "blob" && image.url) await del(image.url);
-      return NextResponse.json({ ok: true });
+      if (!shared.length && image.storage === "blob" && image.url) await del(image.url);
+      return NextResponse.json({ ok: true, blobDeleted: !shared.length });
     }
 
     return NextResponse.json({ error: "Unbekannte Aktion." }, { status: 400 });
