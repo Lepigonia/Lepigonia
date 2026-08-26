@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { del } from "@vercel/blob";
 import { getPosts } from "../../../../lib/posts";
 import { getGithubFile, putGithubFile, deleteGithubFile, isAdmin } from "../../../../lib/admin";
 import { ensureDatabase, sql } from "../../../../lib/db";
@@ -91,8 +92,35 @@ export async function DELETE(request) {
   try {
     const { slug } = await request.json();
     const file = await getGithubFile(`posts/${slug}.md`);
+
+    // Remove the post's gallery records as part of deleting the story.
+    // Gallery-owned images (/gallery/...) are only references and must survive.
+    // Blog-owned images (/blog/...) belong to the story and can be deleted from Blob.
+    await ensureDatabase();
+    const db = sql();
+    const ownedImages = await db`SELECT id,url,storage FROM gallery_images WHERE source='blog' AND post_slug=${slug}`;
+    const blogBlobUrls = ownedImages
+      .map((image) => image.url)
+      .filter((url) => {
+        try { return /^\/blog\//i.test(new URL(url).pathname); }
+        catch { return false; }
+      });
+
+    await db`DELETE FROM gallery_images WHERE source='blog' AND post_slug=${slug}`;
     await deleteGithubFile(`posts/${slug}.md`, `Delete post: ${slug}`, file.sha);
-    return NextResponse.json({ ok: true });
+
+    // Never delete a Blob that is still referenced elsewhere.
+    if (blogBlobUrls.length) {
+      const remaining = await db`SELECT url FROM gallery_images WHERE url=ANY(${blogBlobUrls})`;
+      const remainingUrls = new Set(remaining.map((row) => row.url));
+      await Promise.allSettled(
+        blogBlobUrls
+          .filter((url) => !remainingUrls.has(url))
+          .map((url) => del(url))
+      );
+    }
+
+    return NextResponse.json({ ok: true, removedGalleryImages: ownedImages.length });
   } catch (error) {
     return NextResponse.json({ error: error.message || "Löschen fehlgeschlagen." }, { status: 500 });
   }
