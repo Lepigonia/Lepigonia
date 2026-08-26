@@ -22,6 +22,19 @@ function filenameFromUrl(url) {
   }
 }
 
+function pathnameFromUrl(url) {
+  try { return new URL(url).pathname; }
+  catch { return ""; }
+}
+
+function isGalleryAsset(url) {
+  return /^\/gallery\//i.test(pathnameFromUrl(url));
+}
+
+function isBlogAsset(url) {
+  return /^\/blog\//i.test(pathnameFromUrl(url));
+}
+
 async function canonicalizeGalleryUrls(content) {
   const entries = extractImageUrls(content);
   if (!entries.length) return String(content || "");
@@ -52,10 +65,23 @@ async function canonicalizeGalleryUrls(content) {
     }
     return result;
   } catch (error) {
-    // Saving a story must never fail only because the optional URL repair could not run.
     console.warn("Gallery URL canonicalization skipped:", error?.message || error);
     return String(content || "");
   }
+}
+
+async function getPostImageUrls(post) {
+  return [...new Set([post?.image, ...extractImageUrls(post?.content || []).map((entry) => entry.url)].filter(Boolean))];
+}
+
+async function getActivePostImageUrls(excludeSlug = "") {
+  const posts = getPosts();
+  return new Set(
+    posts
+      .filter((post) => post.slug !== excludeSlug)
+      .flatMap((post) => [post.image, ...extractImageUrls(post.content || "").map((entry) => entry.url)])
+      .filter(Boolean)
+  );
 }
 
 export async function GET(request) {
@@ -91,36 +117,59 @@ export async function DELETE(request) {
   if (!isAdmin(request)) return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
   try {
     const { slug } = await request.json();
-    const file = await getGithubFile(`posts/${slug}.md`);
+    if (!slug || !/^[a-z0-9-]+$/.test(slug)) return NextResponse.json({ error: "Ungültiger Slug." }, { status: 400 });
 
-    // Remove the post's gallery records as part of deleting the story.
-    // Gallery-owned images (/gallery/...) are only references and must survive.
-    // Blog-owned images (/blog/...) belong to the story and can be deleted from Blob.
+    const file = await getGithubFile(`posts/${slug}.md`);
+    const post = getPosts().find((item) => item.slug === slug);
+    const postUrls = await getPostImageUrls(post || {});
+    const blogUrlsFromPost = postUrls.filter(isBlogAsset);
+    const activePostUrls = await getActivePostImageUrls(slug);
+
     await ensureDatabase();
     const db = sql();
-    const ownedImages = await db`SELECT id,url,storage FROM gallery_images WHERE source='blog' AND post_slug=${slug}`;
-    const blogBlobUrls = ownedImages
-      .map((image) => image.url)
-      .filter((url) => {
-        try { return /^\/blog\//i.test(new URL(url).pathname); }
-        catch { return false; }
-      });
 
-    await db`DELETE FROM gallery_images WHERE source='blog' AND post_slug=${slug}`;
+    // Only records explicitly owned by this post are candidates for removal.
+    // A gallery URL embedded in a story is only a reference and is NEVER
+    // deleted from gallery_images or Vercel Blob.
+    const ownedRows = await db`SELECT id,url,source,storage FROM gallery_images WHERE source='blog' AND post_slug=${slug}`;
+    const candidateUrls = [...new Set([
+      ...ownedRows.map((row) => row.url),
+      ...blogUrlsFromPost,
+    ].filter(isBlogAsset))];
+
+    // Delete the source post first. If this fails, no gallery/Blob cleanup is
+    // performed, so a failed GitHub deletion cannot leave half-finished state.
     await deleteGithubFile(`posts/${slug}.md`, `Delete post: ${slug}`, file.sha);
 
-    // Never delete a Blob that is still referenced elsewhere.
-    if (blogBlobUrls.length) {
-      const remaining = await db`SELECT url FROM gallery_images WHERE url=ANY(${blogBlobUrls})`;
-      const remainingUrls = new Set(remaining.map((row) => row.url));
-      await Promise.allSettled(
-        blogBlobUrls
-          .filter((url) => !remainingUrls.has(url))
-          .map((url) => del(url))
-      );
+    // Remove all gallery records owned by the deleted post. This is safe even
+    // when one of the post's images was also referenced by another post: the
+    // Blob itself is protected by the remaining-reference check below.
+    await db`DELETE FROM gallery_images WHERE source='blog' AND post_slug=${slug}`;
+
+    // Legacy data may have registered a /blog/ asset as a manual gallery item.
+    // Remove only the exact assets used by this post; never touch /gallery/ URLs.
+    if (candidateUrls.length) {
+      await db`DELETE FROM gallery_images
+        WHERE url=ANY(${candidateUrls})
+          AND (source='blog' OR source='manual')`;
     }
 
-    return NextResponse.json({ ok: true, removedGalleryImages: ownedImages.length });
+    const remainingRows = candidateUrls.length
+      ? await db`SELECT url FROM gallery_images WHERE url=ANY(${candidateUrls})`
+      : [];
+    const remainingUrls = new Set(remainingRows.map((row) => row.url));
+
+    // Never delete a Blob that another live post still references. Gallery
+    // assets are excluded by candidateUrls and therefore can never be deleted
+    // as a side effect of deleting a story.
+    const blobsToDelete = candidateUrls.filter((url) => !remainingUrls.has(url) && !activePostUrls.has(url));
+    await Promise.allSettled(blobsToDelete.map((url) => del(url)));
+
+    return NextResponse.json({
+      ok: true,
+      removedGalleryImages: ownedRows.length,
+      removedBlogAssets: blobsToDelete.length,
+    });
   } catch (error) {
     return NextResponse.json({ error: error.message || "Löschen fehlgeschlagen." }, { status: 500 });
   }
