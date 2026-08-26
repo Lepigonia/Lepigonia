@@ -17,6 +17,12 @@ await check('public gallery API responds', async () => {
   if (!res.ok || !Array.isArray(body?.countries)) throw new Error(`HTTP ${res.status}`);
 });
 
+await check('public gallery contains published Norway content', async () => {
+  const { body } = await json('/api/gallery');
+  const norway = (body.countries || []).find(country => String(country.slug || '').toLowerCase() === 'norway');
+  if (!norway || !Array.isArray(norway.images) || norway.images.length === 0) throw new Error('Norway gallery data missing');
+});
+
 await check('public gallery has no legacy empty-country fallback', async () => {
   const { body } = await json('/api/gallery');
   const names = (body.countries || []).map(c => String(c.name || '').toLowerCase());
@@ -36,6 +42,18 @@ await check('admin posts requires authentication', async () => {
 await check('admin about requires authentication', async () => {
   const { res } = await json('/api/admin/about');
   if (res.status < 300 || res.status >= 500) throw new Error(`expected auth rejection/redirect, got HTTP ${res.status}`);
+});
+
+await check('newsletter rejects invalid email', async () => {
+  const { res } = await json('/api/newsletter', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email: 'not-an-email' }) });
+  if (res.status !== 400) throw new Error(`expected HTTP 400, got HTTP ${res.status}`);
+});
+
+await check('public routes respond', async () => {
+  for (const path of ['/', '/blog', '/blog/stories-from-the-past', '/map', '/gallery', '/about', '/login']) {
+    const response = await fetch(`${base}${path}`, { redirect: 'manual' });
+    if (response.status >= 400) throw new Error(`${path} returned HTTP ${response.status}`);
+  }
 });
 
 const failed = checks.filter(([, ok]) => !ok).length;
