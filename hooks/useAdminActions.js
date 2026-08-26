@@ -83,7 +83,7 @@ export function useAdminActions({ data, gallery, setGallery, setPost, setSection
           setStatus(`${index + 1} / ${files.length}: ${file.name} – ${Math.round(progress.percentage)}%`)
         );
         setStatus(`${index + 1} / ${files.length}: ${file.name} wird registriert …`);
-        await adminApi.galleryAction({ action: "image-register", slug: gallery, url: blob.url, filename: blob.pathname, storage: "blob" });
+        await adminApi.registerGalleryImage({ slug: gallery, url: blob.url, filename: blob.pathname });
         done += 1;
       } catch (err) {
         failures.push(`${file.name}: ${err.message}`);
