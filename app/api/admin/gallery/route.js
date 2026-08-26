@@ -7,8 +7,11 @@ export const dynamic = "force-dynamic";
 
 export async function GET(request) {
   if (!isAdmin(request)) return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
-  try { return NextResponse.json(await getGallery({ syncPosts: true })); }
-  catch (error) { return NextResponse.json({ error: error.message || "Galerie konnte nicht geladen werden." }, { status: 500 }); }
+  try {
+    return NextResponse.json(await getGallery({ syncPosts: true }));
+  } catch (error) {
+    return NextResponse.json({ error: error.message || "Galerie konnte nicht geladen werden." }, { status: 500 });
+  }
 }
 
 export async function POST(request) {
@@ -72,14 +75,26 @@ export async function POST(request) {
     }
 
     if (body.action === "image-delete") {
-      const image = (await db`SELECT id,url,source,storage FROM gallery_images WHERE id=${body.id} LIMIT 1`)[0];
+      const image = (await db`SELECT id,url,source,post_slug,storage FROM gallery_images WHERE id=${body.id} LIMIT 1`)[0];
       if (!image) return NextResponse.json({ error: "Bild nicht gefunden." }, { status: 404 });
-      if (image.source === "blog") return NextResponse.json({ error: "Blogbilder werden automatisch aus den Stories übernommen und hier nicht gelöscht." }, { status: 400 });
+
+      if (image.source === "blog") {
+        const { getPosts } = await import("../../../../lib/posts");
+        const postExists = getPosts().some((post) => post.slug === image.post_slug);
+        if (postExists) {
+          return NextResponse.json({
+            error: "Dieses Bild gehört noch zu einem bestehenden Blogartikel. Entferne es dort aus dem Artikel, statt das Asset direkt aus der Galerie zu löschen.",
+          }, { status: 409 });
+        }
+      }
+
       await db`DELETE FROM gallery_images WHERE id=${image.id}`;
       if (image.storage === "blob" && image.url) await del(image.url);
       return NextResponse.json({ ok: true });
     }
 
     return NextResponse.json({ error: "Unbekannte Aktion." }, { status: 400 });
-  } catch (error) { return NextResponse.json({ error: error.message || "Galerie konnte nicht gespeichert werden." }, { status: 500 }); }
+  } catch (error) {
+    return NextResponse.json({ error: error.message || "Galerie konnte nicht gespeichert werden." }, { status: 500 });
+  }
 }
