@@ -1,4 +1,5 @@
 import "./globals.css";
+import "./responsive.css";
 
 export const metadata = {
   metadataBase: new URL("https://lepigonia.vercel.app"),
