@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import AdminAboutEditor from "../../components/admin/AdminAboutEditor";
 import AdminGalleryEditor from "../../components/admin/AdminGalleryEditor";
+import AdminHeader from "../../components/admin/AdminHeader";
 import AdminLogin from "../../components/admin/AdminLogin";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import AdminStoryEditor from "../../components/admin/AdminStoryEditor";
@@ -20,10 +20,7 @@ export default function Admin() {
 
   return (
     <main className="admin-shell">
-      <header className="admin-top">
-        <div><Link href="/" className="admin-brand">Lepigonia</Link><span className="admin-top-label"> / Admin</span></div>
-        <nav className="admin-top-nav"><button onClick={actions.logout}>Logout</button></nav>
-      </header>
+      <AdminHeader onLogout={actions.logout} />
       <div className="admin-grid">
         <AdminSidebar
           posts={data.posts}
