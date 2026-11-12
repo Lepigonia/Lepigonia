@@ -53,3 +53,9 @@
 .newsletter-honeypot{position:absolute!important;left:-10000px!important;width:1px!important;height:1px!important;overflow:hidden!important}
 .privacy-copy{margin-top:0}
 .privacy-copy h2{font-size:34px}
+
+
+/* Distinguish map-only story pins from numbered route stops */
+.lepigonia-map-marker--place{border-style:dashed;background:#e9e0d4}
+.lepigonia-map-marker--place b{font-size:15px;color:#8b6f45}
+.map-legend-place{font-size:14px;color:#8b6f45;margin-left:7px}
