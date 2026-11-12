@@ -87,7 +87,7 @@ export function Navbar() {
 export function Footer() {
   return <footer className="site-footer">
     <div><Link href="/" className="wordmark">Lepigonia</Link><p><T en="Personal stories, places, food and moments from the road." de="Persönliche Geschichten, Orte, Essen und Momente unterwegs." /></p></div>
-    <div className="footer-links">{navItems.map(([en, de, href]) => <Link key={href} href={href}><T en={en} de={de} /></Link>)}<Link href="/login"><T en="Login" de="Anmelden" /></Link>
+    <div className="footer-links">{navItems.map(([en, de, href]) => <Link key={href} href={href}><T en={en} de={de} /></Link>)}<Link href="/login"><T en="Login" de="Anmelden" /></Link><Link href="/privacy"><T en="Privacy" de="Datenschutz" /></Link>
       <div className="footer-socials" aria-label="Social media">
         <a className="footer-social-icon" href="https://www.instagram.com/Lepigonia" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" strokeWidth="1.7"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" strokeWidth="1.7"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg></a>
         <a className="footer-social-icon" href="https://www.youtube.com/@Lepigonia" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 7.2a2.7 2.7 0 0 0-1.9-1.9C17.4 4.8 12 4.8 12 4.8s-5.4 0-7.1.5A2.7 2.7 0 0 0 3 7.2 28 28 0 0 0 2.5 12a28 28 0 0 0 .5 4.8 2.7 2.7 0 0 0 1.9 1.9c1.7.5 7.1.5 7.1.5s5.4 0 7.1-.5a2.7 2.7 0 0 0 1.9-1.9 28 28 0 0 0 .5-4.8 28 28 0 0 0-.5-4.8Z" fill="none" stroke="currentColor" strokeWidth="1.6"/><path d="m10 9 5 3-5 3z" fill="currentColor"/></svg></a>
@@ -102,6 +102,8 @@ export function NewsletterModal() {
   const [visible, setVisible] = useState(false);
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("idle");
+  const [consent, setConsent] = useState(false);
+  const [website, setWebsite] = useState("");
 
   useEffect(() => {
     const openFromHash = () => {
@@ -139,7 +141,7 @@ export function NewsletterModal() {
     if (status === "loading") return;
     setStatus("loading");
     try {
-      const response = await fetch("/api/newsletter", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email }) });
+      const response = await fetch("/api/newsletter", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email, consent, website, source: window.location.hash === "#newsletter" ? "newsletter-link" : "popup" }) });
       if (!response.ok) throw new Error("Signup failed");
       setStatus("success");
       localStorage.setItem("lepigonia-newsletter-seen", "1");
@@ -154,8 +156,8 @@ export function NewsletterModal() {
       <button className="modal-close" type="button" onClick={close} aria-label="Close">×</button>
       {status === "success" ? <>
         <p className="eyebrow"><T en="Thank you" de="Danke" /></p>
-        <h2 id="newsletter-title"><T en="You’re on the list ✨" de="Du bist dabei ✨" /></h2>
-        <p><T en="New stories will find their way to you when there is something worth telling." de="Neue Geschichten erreichen dich, wenn es etwas zu erzählen gibt." /></p>
+        <h2 id="newsletter-title"><T en="You’re on the list ✨" de="Deine Anmeldung ist gespeichert ✨" /></h2>
+        <p><T en="Thank you. Your email address has been saved for the Lepigonia newsletter. No emails are being sent yet." de="Danke. Deine E-Mail-Adresse wurde für den Lepigonia-Newsletter gespeichert. Aktuell werden noch keine E-Mails verschickt." /></p>
       </> : <>
         <p className="eyebrow"><T en="A note from the road" de="Eine Nachricht von unterwegs" /></p>
         <h2 id="newsletter-title"><T en="Come along for the journey." de="Komm mit auf die Reise." /></h2>
@@ -163,10 +165,12 @@ export function NewsletterModal() {
         <form onSubmit={submit} className="newsletter-form">
           <label className="sr-only" htmlFor="newsletter-email"><T en="Email address" de="E-Mail-Adresse" /></label>
           <input id="newsletter-email" type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="Email address" autoComplete="email" />
-          <button type="submit" disabled={status === "loading"}>{status === "loading" ? <T en="Joining…" de="Wird eingetragen …" /> : <T en="Join the journey →" de="Mitreisen →" />}</button>
+          <label className="newsletter-honeypot" aria-hidden="true">Website<input type="text" tabIndex={-1} autoComplete="off" value={website} onChange={e => setWebsite(e.target.value)} /></label>
+          <label className="newsletter-consent"><input type="checkbox" required checked={consent} onChange={e => setConsent(e.target.checked)} /><span><T en={<>I agree to receive the Lepigonia newsletter by email. My email address and consent are stored for this purpose. I can withdraw my consent at any time. See the <Link href="/privacy">privacy notice</Link>.</>} de={<>Ich möchte den Lepigonia-Newsletter per E-Mail erhalten. Meine E-Mail-Adresse und meine Einwilligung werden dafür gespeichert. Ich kann meine Einwilligung jederzeit widerrufen. Weitere Informationen in den <Link href="/privacy">Datenschutzhinweisen</Link>.</>} /></span></label>
+          <button type="submit" disabled={status === "loading" || !consent}>{status === "loading" ? <T en="Joining…" de="Wird eingetragen …" /> : <T en="Join the journey →" de="Mitreisen →" />}</button>
         </form>
         {status === "error" && <p className="form-error"><T en="The newsletter service is not available right now. Please try again later." de="Der Newsletter-Dienst ist derzeit nicht verfügbar. Bitte versuche es später erneut." /></p>}
-        <small><T en="No spam. Just stories when there is something worth telling." de="Kein Spam. Nur Geschichten, wenn es etwas zu erzählen gibt." /></small>
+        <small><T en="Your address is stored for this newsletter list. No newsletter emails are sent yet." de="Deine Adresse wird für diese Newsletter-Liste gespeichert. Es werden noch keine Newsletter-E-Mails versendet." /></small>
       </>}
     </div>
   </div>;
