@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getPosts } from "../lib/posts";
-import { getHomepageSettings } from "../lib/db";
+import { getHomepageSettings } from "../lib/homepage";
 import { Navbar, Footer, NewsletterModal, Reveal, T } from "../components/SiteChrome";
 
 export const dynamic = "force-dynamic";
