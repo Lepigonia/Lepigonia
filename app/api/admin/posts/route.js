@@ -101,7 +101,7 @@ export async function POST(request) {
     if (lng !== "" && (!Number.isFinite(lng) || lng < -180 || lng > 180)) return NextResponse.json({ error: "Längengrad muss zwischen -180 und 180 liegen." }, { status: 400 });
 
     const content = await canonicalizeGalleryUrls(post.content || "");
-    const frontmatter = ["title", "date", "location", "country", "lat", "lng", "image", "excerpt"].map((key) => `${key}: ${String(key === "lat" ? lat : key === "lng" ? lng : post[key] || "").replace(/\n/g, " ")}`).join("\n");
+    const frontmatter = ["title", "date", "location", "country", "lat", "lng", "mapOnly", "image", "excerpt"].map((key) => `${key}: ${String(key === "lat" ? lat : key === "lng" ? lng : key === "mapOnly" ? Boolean(post.mapOnly) : post[key] || "").replace(/\n/g, " ")}`).join("\n");
     const fileContent = `---\n${frontmatter}\n---\n\n${String(content).trim()}\n`;
 
     let sha;
