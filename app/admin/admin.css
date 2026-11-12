@@ -24,3 +24,7 @@
 .newsletter-empty p,.newsletter-admin-note{color:#716c63;line-height:1.7;font-size:13px}
 .newsletter-admin-note{margin-top:25px;padding-top:18px;border-top:1px solid #d8d0c5}
 @media(max-width:700px){.newsletter-admin-summary{grid-template-columns:1fr}.newsletter-table thead{display:none}.newsletter-table,.newsletter-table tbody,.newsletter-table tr,.newsletter-table td{display:block;width:100%}.newsletter-table tr{padding:10px 14px;border-bottom:1px solid #ddd5c9}.newsletter-table td{display:flex;justify-content:space-between;gap:15px;padding:8px 0;border:0;white-space:normal}.newsletter-table td:before{content:attr(data-label);font-size:10px;color:#716c63;text-transform:uppercase;letter-spacing:.07em}}
+
+
+.editor-form .map-only-option{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border:1px solid #d8d0c5;background:#faf8f4;text-transform:none;letter-spacing:0;line-height:1.5}
+.editor-form .map-only-option input{width:17px;flex:0 0 17px;margin:1px 0 0;padding:0;accent-color:#8b6f45}
