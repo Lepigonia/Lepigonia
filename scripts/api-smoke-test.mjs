@@ -29,19 +29,27 @@ await check('public gallery has no legacy empty-country fallback', async () => {
   if (names.includes('portugal') || names.includes('arabien')) throw new Error('legacy Portugal/Arabien data returned');
 });
 
-await check('admin gallery requires authentication', async () => {
-  const { res } = await json('/api/admin/gallery');
-  if (res.status < 300 || res.status >= 500) throw new Error(`expected auth rejection/redirect, got HTTP ${res.status}`);
-});
+for (const path of [
+  '/api/admin/gallery',
+  '/api/admin/posts',
+  '/api/admin/about',
+  '/api/admin/newsletter',
+  '/api/admin/homepage',
+  '/api/admin/analytics',
+]) {
+  await check(`unauthenticated access to ${path} is rejected`, async () => {
+    const { res } = await json(path);
+    if (res.status !== 401) throw new Error(`expected HTTP 401, got HTTP ${res.status}`);
+  });
+}
 
-await check('admin posts requires authentication', async () => {
-  const { res } = await json('/api/admin/posts');
-  if (res.status < 300 || res.status >= 500) throw new Error(`expected auth rejection/redirect, got HTTP ${res.status}`);
-});
-
-await check('admin about requires authentication', async () => {
-  const { res } = await json('/api/admin/about');
-  if (res.status < 300 || res.status >= 500) throw new Error(`expected auth rejection/redirect, got HTTP ${res.status}`);
+await check('blob upload endpoint rejects unauthenticated requests', async () => {
+  const { res } = await json('/api/admin/blob-upload', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({}),
+  });
+  if (res.status !== 401) throw new Error(`expected HTTP 401, got HTTP ${res.status}`);
 });
 
 await check('newsletter rejects invalid email', async () => {
@@ -50,7 +58,7 @@ await check('newsletter rejects invalid email', async () => {
 });
 
 await check('public routes respond', async () => {
-  for (const path of ['/', '/blog', '/blog/stories-from-the-past', '/map', '/gallery', '/about', '/login']) {
+  for (const path of ['/', '/blog', '/blog/stories-from-the-past', '/map', '/gallery', '/about', '/login', '/privacy']) {
     const response = await fetch(`${base}${path}`, { redirect: 'manual' });
     if (response.status >= 400) throw new Error(`${path} returned HTTP ${response.status}`);
   }
