@@ -10,10 +10,11 @@ import "../blog-blocks.css";
 export function generateStaticParams() { return getPosts().map(post => ({ slug: post.slug })); }
 function readingTime(content = "") { const words = content.replace(/[#*_`>\[\]()]/g, " ").trim().split(/\s+/).filter(Boolean).length; return Math.max(1, Math.ceil(words / 220)); }
 function firstParagraph(content = "") { const match = content.match(/^(?:\s*#.*\n+|\s*)?([^\n]+(?:\n(?!#|\n)[^\n]+)*)/); return match?.[1]?.replace(/[*_`]/g, "").trim() || ""; }
-export async function generateMetadata({ params }) { const post = getPost(params.slug); return post ? { title: post.title, description: post.excerpt || `A travel story from ${post.location || "the road"}.` } : {}; }
+export async function generateMetadata({ params }) { const { slug } = await params; const post = getPost(slug); return post ? { title: post.title, description: post.excerpt || `A travel story from ${post.location || "the road"}.` } : {}; }
 
-export default function PostPage({ params }) {
-  const post = getPost(params.slug);
+export default async function PostPage({ params }) {
+  const { slug } = await params;
+  const post = getPost(slug);
   if (!post) notFound();
   const html = sanitizeHtml(marked.parse(post.content || ""), {
     allowedTags: [
