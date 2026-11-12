@@ -5,10 +5,12 @@ import AdminAnalytics from "./AdminAnalytics";
 import AdminGalleryEditor from "./AdminGalleryEditor";
 import AdminStoryEditor from "./AdminStoryEditor";
 import AdminHomepageEditor from "./AdminHomepageEditor";
+import AdminNewsletter from "./AdminNewsletter";
 
-export default function AdminContent({ editor, data, actions, controller, showAnalytics, showHomepage }) {
+export default function AdminContent({ editor, data, actions, controller, showAnalytics, showHomepage, showNewsletter }) {
   if (showAnalytics) return <AdminAnalytics />;
   if (showHomepage) return <AdminHomepageEditor />;
+  if (showNewsletter) return <AdminNewsletter />;
 
   if (editor.section === "about") {
     return (
