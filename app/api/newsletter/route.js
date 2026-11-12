@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import crypto from "node:crypto";
 import { ensureDatabase, sql } from "../../../lib/db";
+import { checkNewsletterSignupRateLimit } from "../../../lib/admin";
 
 export const dynamic = "force-dynamic";
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -17,6 +18,9 @@ export async function POST(request) {
     }
     if (body.consent !== true) {
       return NextResponse.json({ error: "Bitte bestätige zuerst die Newsletter-Einwilligung." }, { status: 400 });
+    }
+    if (!(await checkNewsletterSignupRateLimit(request))) {
+      return NextResponse.json({ error: "Zu viele Anmeldeversuche. Bitte versuche es später erneut." }, { status: 429, headers: { "Retry-After": "3600", "Cache-Control": "no-store" } });
     }
 
     const source = body.source === "newsletter-link" ? "newsletter-link" : "popup";
