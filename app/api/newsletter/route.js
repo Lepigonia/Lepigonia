@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import crypto from "node:crypto";
 import { ensureDatabase, sql } from "../../../lib/db";
 
 export const dynamic = "force-dynamic";
@@ -21,15 +22,15 @@ export async function POST(request) {
     const source = body.source === "newsletter-link" ? "newsletter-link" : "popup";
     await ensureDatabase();
     const db = sql();
-    await db\`INSERT INTO newsletter_subscribers (id, email, source, consent_version, consent_text, consented_at, created_at, unsubscribed_at)
-      VALUES (\${crypto.randomUUID()}, \${email}, \${source}, \${CONSENT_VERSION}, \${CONSENT_TEXT}, NOW(), NOW(), NULL)
+    await db`INSERT INTO newsletter_subscribers (id, email, source, consent_version, consent_text, consented_at, created_at, unsubscribed_at)
+      VALUES (${crypto.randomUUID()}, ${email}, ${source}, ${CONSENT_VERSION}, ${CONSENT_TEXT}, NOW(), NOW(), NULL)
       ON CONFLICT (email) DO UPDATE SET
         source=EXCLUDED.source,
         consent_version=EXCLUDED.consent_version,
         consent_text=EXCLUDED.consent_text,
         consented_at=NOW(),
         unsubscribed_at=NULL
-      WHERE newsletter_subscribers.unsubscribed_at IS NOT NULL\`;
+      WHERE newsletter_subscribers.unsubscribed_at IS NOT NULL`;
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("Newsletter signup failed:", error?.message || error);
