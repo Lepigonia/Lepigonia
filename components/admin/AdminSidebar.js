@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 
-export default function AdminSidebar({ posts, countries, postSlug, gallery, section, onNewStory, onSelectStory, onNewCountry, onSelectCountry, onAbout }) {
+export default function AdminSidebar({ posts, countries, postSlug, gallery, section, onNewStory, onSelectStory, onNewCountry, onSelectCountry, onAbout, onAnalytics }) {
   return (
     <aside className="admin-sidebar">
       <button className="new-button" onClick={onNewStory}>＋ Neue Geschichte</button>
@@ -26,6 +26,10 @@ export default function AdminSidebar({ posts, countries, postSlug, gallery, sect
       <button className={`post-nav ${section === "about" ? "active" : ""}`} onClick={onAbout}>
         <strong>About me</strong>
         <small>Persönliche Seite bearbeiten</small>
+      </button>
+      <button className={`post-nav ${section === "analytics" ? "active" : ""}`} onClick={onAnalytics}>
+        <strong>Analytics ↗</strong>
+        <small>Besucher und Website-Traffic</small>
       </button>
       <div className="admin-sidebar-links">
         <Link href="/gallery" target="_blank">Galerie ↗</Link>
