@@ -87,7 +87,7 @@ export function Navbar() {
 export function Footer() {
   return <footer className="site-footer">
     <div><Link href="/" className="wordmark">Lepigonia</Link><p><T en="Personal stories, places, food and moments from the road." de="Persönliche Geschichten, Orte, Essen und Momente unterwegs." /></p></div>
-    <div className="footer-links">{navItems.map(([en, de, href]) => <Link key={href} href={href}><T en={en} de={de} /></Link>)}<Link href="/login"><T en="Login" de="Anmelden" /></Link></div>
+    <div className="footer-links">{navItems.map(([en, de, href]) => <Link key={href} href={href}><T en={en} de={de} /></Link>)}<Link href="/login"><T en="Login" de="Anmelden" /></Link><a className="footer-social-link" href="https://linktr.ee/Lepigonia" target="_blank" rel="noopener noreferrer"><T en="Social media ↗" de="Social Media ↗" /></a></div>
     <div className="footer-note"><T en="Until the next adventure." de="Bis zum nächsten Abenteuer." /></div>
   </footer>;
 }
