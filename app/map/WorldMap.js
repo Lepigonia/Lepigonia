@@ -69,18 +69,27 @@ export default function WorldMap({ posts = [] }) {
         }
       });
       const valid = sortPosts(posts);
+      const isMapOnly = (post) => post.mapOnly === true || String(post.mapOnly).toLowerCase() === "true";
+      const stops = valid.filter((post) => !isMapOnly(post));
       if (!valid.length) map.setView([20, 0], 2);
       else {
         const bounds = [], routePoints = [];
-        valid.forEach((post, index) => {
+        valid.forEach((post) => {
           const lat = Number(post.lat), lng = Number(post.lng);
-          bounds.push([lat, lng]); routePoints.push([lat, lng]);
+          const mapOnly = isMapOnly(post);
+          const stopIndex = stops.indexOf(post);
+          bounds.push([lat, lng]);
+          if (!mapOnly) routePoints.push([lat, lng]);
           const flag = flagFor(post);
-          const location = post.location || post.country || stopLabel;
+          const location = post.location || post.country || (language === "DE" ? "Ort auf der Karte" : "Mapped place");
           const title = post.title || stopLabel;
-          const icon = L.divIcon({ className: "lepigonia-map-marker-wrap", html: `<span class="lepigonia-map-marker"><span class="lepigonia-map-flag">${flag}</span><b>${index + 1}</b></span>`, iconSize: [58, 40], iconAnchor: [29, 20], popupAnchor: [0, -18] });
+          const markerContent = mapOnly
+            ? `<span class="lepigonia-map-marker lepigonia-map-marker--place"><span class="lepigonia-map-flag">${flag}</span><b>✦</b></span>`
+            : `<span class="lepigonia-map-marker"><span class="lepigonia-map-flag">${flag}</span><b>${stopIndex + 1}</b></span>`;
+          const icon = L.divIcon({ className: "lepigonia-map-marker-wrap", html: markerContent, iconSize: [58, 40], iconAnchor: [29, 20], popupAnchor: [0, -18] });
           const marker = L.marker([lat, lng], { icon }).addTo(map);
-          marker.bindTooltip(`<strong>${index + 1} · ${escapeHtml(location)}</strong><br>${escapeHtml(title)}`, { direction: "top", offset: [0, -18], opacity: 0.98 });
+          const markerLabel = mapOnly ? (language === "DE" ? "Ort auf der Karte" : "Mapped place") : `${stopIndex + 1} · ${stopLabel}`;
+          marker.bindTooltip(`<strong>${mapOnly ? escapeHtml(markerLabel) : `${stopIndex + 1} · ${escapeHtml(location)}`}</strong><br>${escapeHtml(title)}`, { direction: "top", offset: [0, -18], opacity: 0.98 });
           marker.bindPopup(`<article class="map-popup"><span class="map-popup-kicker">${flag} ${escapeHtml(location)}</span><strong>${escapeHtml(title)}</strong>${post.date ? `<small>${escapeHtml(post.date)}</small>` : ""}<a href="/blog/${encodeURIComponent(post.slug)}">${storyLabel} <span>→</span></a></article>`);
         });
         if (routePoints.length > 1) route = L.polyline(routePoints, { color: "#171715", weight: 1.5, opacity: 0.42, dashArray: "5 8", interactive: false }).addTo(map);
