@@ -5,9 +5,14 @@ import WorldMap from "./WorldMap";
 
 export const metadata = { title: "Travelmap", description: "Destinations and journeys from Lepigonia." };
 
+function isMapOnly(post) {
+  return post.mapOnly === true || String(post.mapOnly).toLowerCase() === "true";
+}
+
 export default function MapPage() {
   const posts = getPosts();
   const locations = posts.filter((post) => Number.isFinite(Number(post.lat)) && Number.isFinite(Number(post.lng)));
+  const stops = locations.filter((post) => !isMapOnly(post));
 
   return <>
     <Navbar />
@@ -17,22 +22,22 @@ export default function MapPage() {
         <h1 className="page-title"><T en="Every story leaves a mark." de="Jede Geschichte hinterlässt eine Spur." /></h1>
         <p className="page-lead"><T en="Explore the places behind the stories. Follow the route, open a stop and step directly into the chapter." de="Entdecke die Orte hinter den Geschichten. Folge der Route, öffne einen Reisestopp und spring direkt in das passende Kapitel." /></p>
         <div className="map-stats" aria-label="Travel statistics">
-          <span><strong>{locations.length}</strong> <T en="stops" de="Reisestopps" /></span>
-          <span><strong>{new Set(locations.map((post) => post.country || post.location).filter(Boolean)).size}</strong> <T en="countries" de="Länder" /></span>
+          <span><strong>{stops.length}</strong> <T en="stops" de="Reisestopps" /></span>
+          <span><strong>{new Set(stops.map((post) => post.country || post.location).filter(Boolean)).size}</strong> <T en="countries" de="Länder" /></span>
         </div>
       </div>
 
       <WorldMap posts={locations} />
 
-      {locations.length === 0 && <p className="map-empty"><T en="No travel stops with coordinates yet." de="Noch keine Reisestopps mit Koordinaten vorhanden." /></p>}
+      {locations.length === 0 && <p className="map-empty"><T en="No places with coordinates yet." de="Noch keine Orte mit Koordinaten vorhanden." /></p>}
 
-      {locations.length > 0 && <section className="destination-section" aria-labelledby="destination-heading">
+      {stops.length > 0 && <section className="destination-section" aria-labelledby="destination-heading">
         <div className="section-heading">
           <h2 id="destination-heading"><T en="Stops along the way" de="Reisestopps" /></h2>
-          <span className="eyebrow">{locations.length} <T en="stories" de="Geschichten" /></span>
+          <span className="eyebrow">{stops.length} <T en="stories" de="Geschichten" /></span>
         </div>
         <div className="destination-list">
-          {locations.map((post, index) => <Link href={`/blog/${post.slug}`} key={post.slug}>
+          {stops.map((post, index) => <Link href={`/blog/${post.slug}`} key={post.slug}>
             <span className="destination-index">{String(index + 1).padStart(2, "0")}</span>
             <span className="destination-name">{post.location || post.title}</span>
             <small>{post.date || post.country || ""}</small>
