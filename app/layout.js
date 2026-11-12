@@ -1,3 +1,4 @@
+import Script from "next/script";
 import "./globals.css";
 import "./responsive.css";
 
@@ -10,4 +11,23 @@ export const metadata = {
   robots: { index: true, follow: true },
 };
 
-export default function RootLayout({ children }) { return <html lang="en"><body>{children}</body></html>; }
+export default function RootLayout({ children }) {
+  const umamiWebsiteId = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
+
+  return (
+    <html lang="en">
+      <body>
+        {children}
+        {umamiWebsiteId ? (
+          <Script
+            src="https://cloud.umami.is/script.js"
+            data-website-id={umamiWebsiteId}
+            data-exclude-search="true"
+            data-exclude-hash="true"
+            strategy="afterInteractive"
+          />
+        ) : null}
+      </body>
+    </html>
+  );
+}
