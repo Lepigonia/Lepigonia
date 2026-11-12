@@ -14,6 +14,7 @@ export default function Admin() {
   const controller = useAdminController(data);
   const { editor, actions } = controller;
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showHomepage, setShowHomepage] = useState(false);
 
   if (data.ready === null) return <div className="admin-loading">Lepigonia Admin …</div>;
   if (!data.ready) return <AdminLogin onSuccess={actions.refresh} />;
@@ -28,14 +29,15 @@ export default function Admin() {
           postSlug={editor.post.slug}
           gallery={editor.gallery}
           section={showAnalytics ? "analytics" : editor.section}
-          onNewStory={() => { setShowAnalytics(false); controller.newStory(); }}
-          onSelectStory={(post) => { setShowAnalytics(false); controller.selectStory(post); }}
-          onNewCountry={() => { setShowAnalytics(false); controller.newCountry(); }}
-          onSelectCountry={(country) => { setShowAnalytics(false); controller.selectCountry(country); }}
-          onAbout={() => { setShowAnalytics(false); controller.selectAbout(); }}
-          onAnalytics={() => setShowAnalytics(true)}
+          onNewStory={() => { setShowAnalytics(false); setShowHomepage(false); controller.newStory(); }}
+          onSelectStory={(post) => { setShowAnalytics(false); setShowHomepage(false); controller.selectStory(post); }}
+          onNewCountry={() => { setShowAnalytics(false); setShowHomepage(false); controller.newCountry(); }}
+          onSelectCountry={(country) => { setShowAnalytics(false); setShowHomepage(false); controller.selectCountry(country); }}
+          onAbout={() => { setShowAnalytics(false); setShowHomepage(false); controller.selectAbout(); }}
+          onAnalytics={() => { setShowHomepage(false); setShowAnalytics(true); }}
+          onHomepage={() => { setShowAnalytics(false); setShowHomepage(true); }}
         />
-        <AdminContent editor={editor} data={data} actions={actions} controller={controller} showAnalytics={showAnalytics} />
+        <AdminContent editor={editor} data={data} actions={actions} controller={controller} showAnalytics={showAnalytics} showHomepage={showHomepage} />
       </div>
     </main>
   );
