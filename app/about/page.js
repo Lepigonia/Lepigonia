@@ -13,5 +13,10 @@ export default function AboutPage() {
     return () => window.removeEventListener("lepigonia-language", sync);
   }, []);
   const copy = about?.[lang];
-  return <><Navbar/><main className="section-wrap page-top about-page"><div><p className="eyebrow">{copy?.eyebrow || "Behind the journal"}</p><h1 className="page-title">{copy?.title || "A real person. A life in motion."}</h1></div><div className="about-copy">{(copy?.paragraphs || []).map((p, i) => <p key={i} className={i === 2 ? "muted" : ""}>{p}</p>)}</div></main><Footer/></>;
+  const images = about?.images || [];
+  return <><Navbar/><main className="section-wrap page-top about-page">
+    <div><p className="eyebrow">{copy?.eyebrow || "Behind the journal"}</p><h1 className="page-title">{copy?.title || "A real person. A life in motion."}</h1></div>
+    {images.length > 0 && <div className="about-photo-grid">{images.map((image, index) => <figure className="about-photo" key={image.url || index}><img src={image.url} alt={image.alt || "Personal travel photograph"} loading="lazy"/>{image.caption && <figcaption>{image.caption}</figcaption>}</figure>)}</div>}
+    <div className="about-copy">{(copy?.paragraphs || []).map((p, i) => <p key={i} className={i === 2 ? "muted" : ""}>{p}</p>)}</div>
+  </main><Footer/></>;
 }
