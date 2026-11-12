@@ -169,7 +169,7 @@ export function NewsletterModal() {
           <label className="newsletter-consent"><input type="checkbox" required checked={consent} onChange={e => setConsent(e.target.checked)} /><span><T en={<>I agree to receive the Lepigonia newsletter by email. My email address and consent are stored for this purpose. I can withdraw my consent at any time. See the <Link href="/privacy">privacy notice</Link>.</>} de={<>Ich möchte den Lepigonia-Newsletter per E-Mail erhalten. Meine E-Mail-Adresse und meine Einwilligung werden dafür gespeichert. Ich kann meine Einwilligung jederzeit widerrufen. Weitere Informationen in den <Link href="/privacy">Datenschutzhinweisen</Link>.</>} /></span></label>
           <button type="submit" disabled={status === "loading" || !consent}>{status === "loading" ? <T en="Joining…" de="Wird eingetragen …" /> : <T en="Join the journey →" de="Mitreisen →" />}</button>
         </form>
-        {status === "error" && <p className="form-error"><T en="The newsletter service is not available right now. Please try again later." de="Der Newsletter-Dienst ist derzeit nicht verfügbar. Bitte versuche es später erneut." /></p>}
+        {status === "error" && <p className="form-error"><T en="Your signup could not be saved right now. Please try again later." de="Die Anmeldung konnte gerade nicht gespeichert werden. Bitte versuche es später erneut." /></p>}
         <small><T en="Your address is stored for this newsletter list. No newsletter emails are sent yet." de="Deine Adresse wird für diese Newsletter-Liste gespeichert. Es werden noch keine Newsletter-E-Mails versendet." /></small>
       </>}
     </div>
