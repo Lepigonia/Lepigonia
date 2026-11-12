@@ -15,7 +15,7 @@ export default async function Home() {
     <Navbar />
     <main>
       <section className="hero home-hero">
-        <div className="hero-image" aria-hidden="true"><Image src={homepage.image || "https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=2400&q=85"} alt={homepage.imageAlt || "Lepigonia Reisemobil"} fill priority sizes="100vw" /></div>
+        <div className="hero-image" aria-hidden="true"><img src={homepage.image || "https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=2400&q=85"} alt={homepage.imageAlt || "Lepigonia Reisemobil"} fetchPriority="high" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}} /></div>
         <div className="hero-scrim home-hero-scrim" />
         <div className="hero-content">
           <p className="eyebrow hero-eyebrow"><T en={homepage.eyebrowEn} de={homepage.eyebrowDe} /></p>
