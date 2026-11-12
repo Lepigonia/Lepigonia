@@ -1,10 +1,13 @@
 "use client";
 
 import AdminAboutEditor from "./AdminAboutEditor";
+import AdminAnalytics from "./AdminAnalytics";
 import AdminGalleryEditor from "./AdminGalleryEditor";
 import AdminStoryEditor from "./AdminStoryEditor";
 
-export default function AdminContent({ editor, data, actions, controller }) {
+export default function AdminContent({ editor, data, actions, controller, showAnalytics }) {
+  if (showAnalytics) return <AdminAnalytics />;
+
   if (editor.section === "about") {
     return (
       <AdminAboutEditor
