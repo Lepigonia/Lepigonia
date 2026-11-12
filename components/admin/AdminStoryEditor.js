@@ -23,6 +23,7 @@ export default function AdminStoryEditor({ post, countries, status, error, onCha
           <label>Breitengrad (Lat)<input type="number" step="any" min="-90" max="90" value={post.lat || ""} onChange={(e) => set("lat", e.target.value)} /></label>
           <label>Längengrad (Long)<input type="number" step="any" min="-180" max="180" value={post.lng || ""} onChange={(e) => set("lng", e.target.value)} /></label>
         </div>
+        <label className="map-only-option"><input type="checkbox" checked={post.mapOnly === true || String(post.mapOnly).toLowerCase() === "true"} onChange={(e) => set("mapOnly", e.target.checked)} /> Nur auf der Karte markieren – nicht als Reisestopp oder Teil der Route anzeigen</label>
         <label>Teaser<input value={post.excerpt} onChange={(e) => set("excerpt", e.target.value)} /></label>
         <label>Hero-Bild-URL<input value={post.image} onChange={(e) => set("image", e.target.value)} /></label>
         <label className="upload">Hero-Bild hochladen<input type="file" accept="image/*" onChange={onHeroUpload} /></label>
