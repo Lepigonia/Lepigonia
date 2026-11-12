@@ -41,3 +41,15 @@
 .footer-social-icon:hover{color:#d58a70;transform:translateY(-2px)}
 .footer-social-icon:focus-visible{outline:2px solid currentColor;outline-offset:4px;border-radius:4px}
 @media(max-width:700px){.footer-socials{margin-top:16px;gap:16px}}
+
+
+/* Newsletter consent and privacy disclosure */
+.newsletter-consent{display:flex;align-items:flex-start;gap:10px;margin:14px 0 18px;font-size:11px;line-height:1.55;color:var(--muted);text-transform:none;letter-spacing:0}
+.newsletter-consent input{flex:0 0 16px;width:16px;height:16px;margin:2px 0 0;accent-color:var(--ink)}
+.newsletter-consent a{text-decoration:underline;text-underline-offset:3px;color:var(--ink)}
+.newsletter-form{flex-wrap:wrap}
+.newsletter-form .newsletter-consent{flex:0 0 100%}
+.newsletter-form button:disabled{opacity:.45;cursor:not-allowed}
+.newsletter-honeypot{position:absolute!important;left:-10000px!important;width:1px!important;height:1px!important;overflow:hidden!important}
+.privacy-copy{margin-top:0}
+.privacy-copy h2{font-size:34px}
