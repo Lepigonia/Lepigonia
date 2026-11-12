@@ -1,23 +1,27 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getPosts } from "../lib/posts";
+import { getHomepageSettings } from "../lib/db";
 import { Navbar, Footer, NewsletterModal, Reveal, T } from "../components/SiteChrome";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
   const posts = getPosts();
+  const homepage = await getHomepageSettings();
   const featured = posts[0];
   const rest = posts.slice(1, 5);
   return <>
     <Navbar />
     <main>
       <section className="hero home-hero">
-        <div className="hero-image" aria-hidden="true"><Image src="https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=2400&q=85" alt="Atmospheric mountain landscape" fill priority sizes="100vw" /></div>
+        <div className="hero-image" aria-hidden="true"><Image src={homepage.image || "https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=2400&q=85"} alt={homepage.imageAlt || "Lepigonia Reisemobil"} fill priority sizes="100vw" /></div>
         <div className="hero-scrim home-hero-scrim" />
         <div className="hero-content">
-          <p className="eyebrow hero-eyebrow"><T en="Personal travel journal" de="Persönliches Reisetagebuch" /></p>
-          <h1><T en="Stories from places worth remembering." de="Geschichten von Orten, die bleiben." /></h1>
-          <p className="hero-copy"><T en="Slow travel, beautiful photography and the little moments that stay with you." de="Langsames Reisen, besondere Fotografie und die kleinen Momente, die bleiben." /></p>
-          <Link href="#stories" className="editorial-link light"><T en="Explore stories" de="Geschichten entdecken" /> <span>→</span></Link>
+          <p className="eyebrow hero-eyebrow"><T en={homepage.eyebrowEn} de={homepage.eyebrowDe} /></p>
+          <h1><T en={homepage.titleEn} de={homepage.titleDe} /></h1>
+          <p className="hero-copy"><T en={homepage.copyEn} de={homepage.copyDe} /></p>
+          <Link href="#stories" className="editorial-link light"><T en={homepage.buttonEn} de={homepage.buttonDe} /> <span>→</span></Link>
         </div>
         <div className="hero-scroll"><T en="Scroll to wander" de="Zum Entdecken scrollen" /> <span>↓</span></div>
       </section>
