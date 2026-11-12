@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { marked } from "marked";
+import sanitizeHtml from "sanitize-html";
 import Image from "next/image";
 import { getPost, getPosts } from "../../../lib/posts";
 import { Navbar, Footer, T } from "../../../components/SiteChrome";
@@ -14,7 +15,28 @@ export async function generateMetadata({ params }) { const post = getPost(params
 export default function PostPage({ params }) {
   const post = getPost(params.slug);
   if (!post) notFound();
-  const html = marked.parse(post.content || "");
+  const html = sanitizeHtml(marked.parse(post.content || ""), {
+    allowedTags: [
+      "p", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "ul", "ol", "li",
+      "strong", "em", "b", "i", "del", "s", "code", "pre", "hr", "br", "a",
+      "img", "figure", "figcaption", "table", "thead", "tbody", "tr", "th", "td"
+    ],
+    allowedAttributes: {
+      a: ["href", "title"],
+      img: ["src", "alt", "title", "loading"],
+      figure: ["class"],
+      ol: ["start"],
+      th: ["colspan", "rowspan"],
+      td: ["colspan", "rowspan"]
+    },
+    allowedClasses: {
+      figure: ["story-inline", "story-inline-full", "story-inline-left", "story-inline-right"]
+    },
+    allowedSchemes: ["https", "http", "mailto"],
+    allowedSchemesByTag: { img: ["https"] },
+    allowProtocolRelative: false,
+    disallowedTagsMode: "discard"
+  });
   const minutes = readingTime(post.content);
   const lead = post.excerpt || firstParagraph(post.content);
   const hasCoordinates = post.lat !== undefined && post.lat !== "" && post.lng !== undefined && post.lng !== "";
