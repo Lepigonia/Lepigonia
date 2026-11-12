@@ -11,7 +11,7 @@ function isMapOnly(post) {
 
 export default function MapPage() {
   const posts = getPosts();
-  const locations = posts.filter((post) => Number.isFinite(Number(post.lat)) && Number.isFinite(Number(post.lng)));
+  const locations = posts.filter((post) => String(post.lat ?? "").trim() !== "" && String(post.lng ?? "").trim() !== "" && Number.isFinite(Number(post.lat)) && Number.isFinite(Number(post.lng)));
   const stops = locations.filter((post) => !isMapOnly(post));
 
   return <>
