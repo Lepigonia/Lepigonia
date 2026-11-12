@@ -48,6 +48,7 @@ export function useAdminEditorState({ setAbout, countries }) {
 
   const updateAbout = useCallback((language, field, value, index) => {
     setAbout((current) => {
+      if (field === "images") return { ...current, images: value };
       const localized = { ...(current[language] || {}) };
       if (field === "paragraphs") {
         const paragraphs = [...(localized.paragraphs || ["", "", ""])];
