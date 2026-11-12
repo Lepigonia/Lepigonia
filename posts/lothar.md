@@ -78,4 +78,4 @@ There's still quite a bit of work ahead before it gets anywhere near that vision
 I'll share more about the condition I actually bought the T4 in and what I discovered once I started looking closer in one of the upcoming posts. Because the real work on this project was only just about to begin.
 
 One thing is certain: this isn't just an old vehicle. It's the beginning of a new chapter – and I'm excited to see where this T4 will take me.
-<figure class="story-inline story-inline-right"><img src="https://86ec824d1amijkwd.public.blob.vercel-storage.com/blog-inline/1794526352824-F9688D5F-FA58-4AE1-A11B-6CEF8C26055D-fW6pGds3HOWVDhR7skgsYHSZK7NIzg.jpeg" alt="Reisefoto" loading="lazy" /></figure>
+<figure class="story-inline story-inline-full"><img src="https://86ec824d1amijkwd.public.blob.vercel-storage.com/blog-inline/1794526352824-F9688D5F-FA58-4AE1-A11B-6CEF8C26055D-fW6pGds3HOWVDhR7skgsYHSZK7NIzg.jpeg" alt="Reisefoto" loading="lazy" /></figure>
