@@ -10,9 +10,9 @@ export default function Home() {
   return <>
     <Navbar />
     <main>
-      <section className="hero">
+      <section className="hero home-hero">
         <div className="hero-image" aria-hidden="true"><Image src="https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=2400&q=85" alt="Atmospheric mountain landscape" fill priority sizes="100vw" /></div>
-        <div className="hero-scrim" />
+        <div className="hero-scrim home-hero-scrim" />
         <div className="hero-content">
           <p className="eyebrow hero-eyebrow"><T en="Personal travel journal" de="Persönliches Reisetagebuch" /></p>
           <h1><T en="Stories from places worth remembering." de="Geschichten von Orten, die bleiben." /></h1>
@@ -22,7 +22,7 @@ export default function Home() {
         <div className="hero-scroll"><T en="Scroll to wander" de="Zum Entdecken scrollen" /> <span>↓</span></div>
       </section>
 
-      <section className="intro section-wrap">
+      <section className="intro section-wrap home-intro">
         <Reveal><p className="eyebrow"><T en="The journal" de="Das Journal" /></p><h2><T en="Travel slowly. Notice everything." de="Langsam reisen. Alles wahrnehmen." /></h2></Reveal>
         <Reveal className="intro-copy"><p><T en="Lepigonia is a personal collection of journeys, places, food and fleeting moments from the road. Less itinerary, more memory." de="Lepigonia ist eine persönliche Sammlung von Reisen, Orten, Essen und flüchtigen Momenten unterwegs. Weniger Reiseplan, mehr Erinnerung." /></p><Link href="/about" className="editorial-link"><T en="A little about me" de="Ein wenig über mich" /> <span>→</span></Link></Reveal>
       </section>
@@ -33,8 +33,8 @@ export default function Home() {
         {rest.length > 0 && <div className="story-grid">{rest.map((post, i) => <Reveal key={post.slug} className={`story-card ${i % 3 === 0 ? "story-card--wide" : ""}`}><Link href={`/blog/${post.slug}`}><div className="story-media"><Image src={post.image || "https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1400&q=80"} alt={post.title || "Travel story"} fill sizes="(max-width: 800px) 100vw, 45vw" /></div><div className="story-meta"><span>{post.location || "Journal"}</span><span>{post.date || ""}</span></div><h3>{post.title}</h3></Link></Reveal>)}</div>}
       </section>
 
-      <section className="statement"><div><p className="eyebrow"><T en="Why Lepigonia" de="Warum Lepigonia" /></p><p className="statement-text"><T en="Some places are beautiful. Others become part of you." de="Manche Orte sind schön. Andere werden ein Teil von dir." /></p></div></section>
-      <section id="newsletter" className="newsletter-strip section-wrap"><Reveal><p className="eyebrow"><T en="Stay close" de="Bleib dabei" /></p><h2><T en="Stories, when there’s something to tell." de="Geschichten, wenn es etwas zu erzählen gibt." /></h2><a href="#newsletter" className="editorial-link"><T en="Join the journey" de="Mitreisen" /> <span>→</span></a></Reveal></section>
+      <section className="statement home-statement"><div><p className="eyebrow"><T en="Why Lepigonia" de="Warum Lepigonia" /></p><p className="statement-text"><T en="Some places are beautiful. Others become part of you." de="Manche Orte sind schön. Andere werden ein Teil von dir." /></p></div></section>
+      <section id="newsletter" className="newsletter-strip section-wrap home-newsletter"><Reveal><p className="eyebrow"><T en="Stay close" de="Bleib dabei" /></p><h2><T en="Stories, when there’s something to tell." de="Geschichten, wenn es etwas zu erzählen gibt." /></h2><a href="#newsletter" className="editorial-link"><T en="Join the journey" de="Mitreisen" /> <span>→</span></a></Reveal></section>
     </main>
     <Footer /><NewsletterModal />
   </>;
