@@ -23,7 +23,7 @@ function flagFor(post) {
 }
 function sortPosts(posts) {
   return posts.map((post, index) => ({ ...post, _sourceIndex: index }))
-    .filter(post => Number.isFinite(Number(post.lat)) && Number.isFinite(Number(post.lng)))
+    .filter(post => String(post.lat ?? "").trim() !== "" && String(post.lng ?? "").trim() !== "" && Number.isFinite(Number(post.lat)) && Number.isFinite(Number(post.lng)))
     .sort((a, b) => {
       const da = Date.parse(a.date || a.publishedAt || a.createdAt || "");
       const db = Date.parse(b.date || b.publishedAt || b.createdAt || "");
@@ -107,5 +107,5 @@ export default function WorldMap({ posts = [] }) {
     return () => { cancelled = true; window.clearTimeout(resizeTimer); resizeObserver?.disconnect(); window.removeEventListener("resize", invalidate); route?.remove(); map?.remove(); map = null; };
   }, [posts, language]);
 
-  return <div className="world-map-shell"><div ref={ref} className="world-map" aria-label={language === "DE" ? "Interaktive Weltkarte der Reisestopps" : "Interactive world map of travel stops"} /><div className="map-legend"><span className="map-legend-dot" /> {language === "DE" ? "Reisestopps" : "Travel stops"} <span className="map-legend-line" /> {language === "DE" ? "Reiseroute" : "Route"}</div><p className="map-credit">{language === "DE" ? "Kartendaten" : "Map data"} &copy; OpenStreetMap contributors</p></div>;
+  return <div className="world-map-shell"><div ref={ref} className="world-map" aria-label={language === "DE" ? "Interaktive Weltkarte der Reisestopps" : "Interactive world map of travel stops"} /><div className="map-legend"><span className="map-legend-dot" /> {language === "DE" ? "Reisestopps" : "Travel stops"} <span className="map-legend-line" /> {language === "DE" ? "Reiseroute" : "Route"} <span className="map-legend-place">✦</span> {language === "DE" ? "Weitere Orte" : "Other places"}</div><p className="map-credit">{language === "DE" ? "Kartendaten" : "Map data"} &copy; OpenStreetMap contributors</p></div>;
 }
