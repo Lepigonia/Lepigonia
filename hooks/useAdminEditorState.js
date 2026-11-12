@@ -10,6 +10,7 @@ export const blankPost = () => ({
   country: "",
   lat: "",
   lng: "",
+  mapOnly: false,
   image: "",
   excerpt: "",
   content: "",
@@ -27,7 +28,7 @@ export function useAdminEditorState({ setAbout, countries }) {
 
   const selectStory = useCallback((value) => {
     setSection("stories");
-    setPost(value);
+    setPost({ ...blankPost(), ...value, mapOnly: value.mapOnly === true || String(value.mapOnly).toLowerCase() === "true" });
   }, []);
 
   const selectCountry = useCallback((country) => {
