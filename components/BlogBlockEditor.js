@@ -3,6 +3,10 @@
 import { useMemo, useState } from "react";
 import { upload } from "@vercel/blob/client";
 import { marked } from "marked";
+
+function escapePreviewHtml(value) {
+  return String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/\x27/g, "&#39;");
+}
 import "./BlogBlockEditor.css";
 
 function insertAtSelection(value, start, end, insert) { return `${value.slice(0, start)}${insert}${value.slice(end)}`; }
@@ -10,7 +14,7 @@ function imageBlock(url, align, caption) { const safeCaption=(caption||"").repla
 
 export default function BlogBlockEditor({ value, onChange, country }) {
   const [selection,setSelection]=useState({start:0,end:0}),[showImages,setShowImages]=useState(false),[showImageOptions,setShowImageOptions]=useState(null),[gallery,setGallery]=useState([]),[galleryLoading,setGalleryLoading]=useState(false),[galleryCountry,setGalleryCountry]=useState("all"),[gallerySearch,setGallerySearch]=useState(""),[tab,setTab]=useState("write"),[status,setStatus]=useState(""),[error,setError]=useState("");
-  const preview=useMemo(()=>marked.parse(value||""),[value]);
+  const preview=useMemo(()=>{ const renderer=new marked.Renderer(); renderer.html=({text})=>escapePreviewHtml(text); return marked.parse(value||"",{renderer}); },[value]);
   const galleryCountries=useMemo(()=>[...new Set(gallery.map(image=>image.country).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"de")),[gallery]);
   const visibleGallery=useMemo(()=>{
     const q=gallerySearch.trim().toLowerCase();
