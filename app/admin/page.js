@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import AdminContent from "../../components/admin/AdminContent";
 import AdminHeader from "../../components/admin/AdminHeader";
 import AdminLogin from "../../components/admin/AdminLogin";
@@ -12,6 +13,7 @@ export default function Admin() {
   const data = useAdminData();
   const controller = useAdminController(data);
   const { editor, actions } = controller;
+  const [showAnalytics, setShowAnalytics] = useState(false);
 
   if (data.ready === null) return <div className="admin-loading">Lepigonia Admin …</div>;
   if (!data.ready) return <AdminLogin onSuccess={actions.refresh} />;
@@ -25,14 +27,15 @@ export default function Admin() {
           countries={data.countries}
           postSlug={editor.post.slug}
           gallery={editor.gallery}
-          section={editor.section}
-          onNewStory={controller.newStory}
-          onSelectStory={controller.selectStory}
-          onNewCountry={controller.newCountry}
-          onSelectCountry={controller.selectCountry}
-          onAbout={controller.selectAbout}
+          section={showAnalytics ? "analytics" : editor.section}
+          onNewStory={() => { setShowAnalytics(false); controller.newStory(); }}
+          onSelectStory={(post) => { setShowAnalytics(false); controller.selectStory(post); }}
+          onNewCountry={() => { setShowAnalytics(false); controller.newCountry(); }}
+          onSelectCountry={(country) => { setShowAnalytics(false); controller.selectCountry(country); }}
+          onAbout={() => { setShowAnalytics(false); controller.selectAbout(); }}
+          onAnalytics={() => setShowAnalytics(true)}
         />
-        <AdminContent editor={editor} data={data} actions={actions} controller={controller} />
+        <AdminContent editor={editor} data={data} actions={actions} controller={controller} showAnalytics={showAnalytics} />
       </div>
     </main>
   );
