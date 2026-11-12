@@ -87,7 +87,13 @@ export function Navbar() {
 export function Footer() {
   return <footer className="site-footer">
     <div><Link href="/" className="wordmark">Lepigonia</Link><p><T en="Personal stories, places, food and moments from the road." de="Persönliche Geschichten, Orte, Essen und Momente unterwegs." /></p></div>
-    <div className="footer-links">{navItems.map(([en, de, href]) => <Link key={href} href={href}><T en={en} de={de} /></Link>)}<Link href="/login"><T en="Login" de="Anmelden" /></Link><a className="footer-social-link" href="https://linktr.ee/Lepigonia" target="_blank" rel="noopener noreferrer"><T en="Social media ↗" de="Social Media ↗" /></a></div>
+    <div className="footer-links">{navItems.map(([en, de, href]) => <Link key={href} href={href}><T en={en} de={de} /></Link>)}<Link href="/login"><T en="Login" de="Anmelden" /></Link>
+      <div className="footer-socials" aria-label="Social media">
+        <a className="footer-social-icon" href="https://www.instagram.com/Lepigonia" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" strokeWidth="1.7"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" strokeWidth="1.7"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg></a>
+        <a className="footer-social-icon" href="https://www.youtube.com/@Lepigonia" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 7.2a2.7 2.7 0 0 0-1.9-1.9C17.4 4.8 12 4.8 12 4.8s-5.4 0-7.1.5A2.7 2.7 0 0 0 3 7.2 28 28 0 0 0 2.5 12a28 28 0 0 0 .5 4.8 2.7 2.7 0 0 0 1.9 1.9c1.7.5 7.1.5 7.1.5s5.4 0 7.1-.5a2.7 2.7 0 0 0 1.9-1.9 28 28 0 0 0 .5-4.8 28 28 0 0 0-.5-4.8Z" fill="none" stroke="currentColor" strokeWidth="1.6"/><path d="m10 9 5 3-5 3z" fill="currentColor"/></svg></a>
+        <a className="footer-social-icon" href="https://www.patreon.com/c/Lepigonia" target="_blank" rel="noopener noreferrer" aria-label="Patreon" title="Patreon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3v18" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/><circle cx="15" cy="9" r="6" fill="none" stroke="currentColor" strokeWidth="2.5"/></svg></a>
+      </div>
+    </div>
     <div className="footer-note"><T en="Until the next adventure." de="Bis zum nächsten Abenteuer." /></div>
   </footer>;
 }
