@@ -1,23 +1,29 @@
 import { NextResponse } from "next/server";
-import { isAdmin } from "../../../../lib/admin";
+import { verifyAdmin } from "../../../../lib/admin";
 import { ensureDatabase, sql } from "../../../../lib/db";
+import { unsubscribeUrl } from "../../../../lib/newsletter";
 
 export const dynamic = "force-dynamic";
 
+// Spreadsheet programs execute cells that start with = + - @ as formulas, so those get a leading apostrophe.
 function csvCell(value) {
-  return `"${String(value ?? "").replace(/"/g, '""')}"`;
+  let text = value instanceof Date ? value.toISOString() : String(value ?? "");
+  if (/^[=+\-@\t\r]/.test(text)) text = `'${text}`;
+  return `"${text.replace(/"/g, '""')}"`;
 }
 
 export async function GET(request) {
-  if (!isAdmin(request)) return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
+  if (!(await verifyAdmin(request))) return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
   try {
     await ensureDatabase();
     const db = sql();
-    const rows = await db`SELECT id, email, source, consent_version, consent_text, consented_at, created_at FROM newsletter_subscribers WHERE unsubscribed_at IS NULL ORDER BY created_at DESC`;
+    const rows = await db`SELECT id, email, source, consent_version, consent_text, consented_at, confirmed_at, created_at FROM newsletter_subscribers WHERE unsubscribed_at IS NULL ORDER BY created_at DESC`;
     if (new URL(request.url).searchParams.get("format") === "csv") {
+      // Only confirmed (double opt-in) addresses may be mailed, so only those are exported.
+      const confirmed = rows.filter((row) => row.confirmed_at);
       const lines = [
-        ["E-Mail", "Anmeldedatum", "Quelle", "Einwilligungsversion"],
-        ...rows.map((row) => [row.email, row.consented_at, row.source, row.consent_version]),
+        ["E-Mail", "Anmeldedatum", "Bestätigt am", "Quelle", "Einwilligungsversion", "Abmelde-Link"],
+        ...confirmed.map((row) => [row.email, row.consented_at, row.confirmed_at, row.source, row.consent_version, unsubscribeUrl(row.id)]),
       ];
       const csv = "\uFEFF" + lines.map((line) => line.map(csvCell).join(";")).join("\r\n");
       return new Response(csv, {
@@ -33,9 +39,11 @@ export async function GET(request) {
         id: row.id,
         email: row.email,
         source: row.source,
+        status: row.confirmed_at ? "confirmed" : "pending",
         consentVersion: row.consent_version,
         consentText: row.consent_text,
         consentedAt: row.consented_at,
+        confirmedAt: row.confirmed_at,
         createdAt: row.created_at,
       })),
     });
@@ -45,7 +53,7 @@ export async function GET(request) {
 }
 
 export async function DELETE(request) {
-  if (!isAdmin(request)) return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
+  if (!(await verifyAdmin(request))) return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
   try {
     const body = await request.json();
     if (!body.id) return NextResponse.json({ error: "Eintrag fehlt." }, { status: 400 });

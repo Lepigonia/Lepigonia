@@ -1,6 +1,9 @@
 import crypto from "node:crypto";
 import { NextResponse } from "next/server";
-import { checkAdminLoginRateLimit, setAuthCookie } from "../../../../lib/admin";
+import { checkAdminLoginRateLimit, createSession, getAdminEmail, setSessionCookie } from "../../../../lib/admin";
+import { isTotpEnabled, verifyTotp } from "../../../../lib/totp";
+
+const noStore = { "Cache-Control": "no-store" };
 
 function safeEqual(a, b) {
   const left = Buffer.from(String(a || ""));
@@ -13,22 +16,29 @@ export async function POST(request) {
     const allowed = await checkAdminLoginRateLimit(request);
     if (!allowed) return NextResponse.json(
       { error: "Zu viele Anmeldeversuche. Bitte warte 15 Minuten und versuche es erneut." },
-      { status: 429, headers: { "Retry-After": "900", "Cache-Control": "no-store" } },
+      { status: 429, headers: { "Retry-After": "900", ...noStore } },
     );
 
     const body = await request.json();
     const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
-    const expectedEmail = String(process.env.ADMIN_EMAIL || "").trim().toLowerCase();
     const password = typeof body.password === "string" ? body.password : "";
-    if (!expectedEmail || !process.env.ADMIN_PASSWORD || !email || !password ||
-        !safeEqual(email, expectedEmail) || !safeEqual(password, process.env.ADMIN_PASSWORD)) {
-      return NextResponse.json({ error: "Ungültige Zugangsdaten." }, { status: 401, headers: { "Cache-Control": "no-store" } });
+    const expectedEmail = getAdminEmail();
+    const expectedPassword = process.env.ADMIN_PASSWORD || "";
+
+    // Evaluate every factor before deciding, and answer with one generic message.
+    const emailOk = Boolean(expectedEmail && email) && safeEqual(email, expectedEmail);
+    const passwordOk = Boolean(expectedPassword && password) && safeEqual(password, expectedPassword);
+    const totpOk = !isTotpEnabled() || verifyTotp(body.totp, process.env.ADMIN_TOTP_SECRET);
+    if (!emailOk || !passwordOk || !totpOk) {
+      return NextResponse.json({ error: "Ungültige Zugangsdaten." }, { status: 401, headers: noStore });
     }
 
-    const response = NextResponse.json({ ok: true, role: "admin", redirect: "/admin" }, { headers: { "Cache-Control": "no-store" } });
-    setAuthCookie(response, expectedEmail, "admin");
+    const token = await createSession();
+    const response = NextResponse.json({ ok: true, role: "admin", redirect: "/admin" }, { headers: noStore });
+    setSessionCookie(response, token);
     return response;
-  } catch {
-    return NextResponse.json({ error: "Anmeldung derzeit nicht verfügbar." }, { status: 503, headers: { "Cache-Control": "no-store" } });
+  } catch (error) {
+    console.error("Admin login failed:", error?.message || error);
+    return NextResponse.json({ error: "Anmeldung derzeit nicht verfügbar." }, { status: 503, headers: noStore });
   }
 }

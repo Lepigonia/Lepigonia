@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { isAdmin } from "../../../../lib/admin";
+import { verifyAdmin } from "../../../../lib/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +24,7 @@ async function umamiGet(path) {
 }
 
 export async function GET(request) {
-  if (!isAdmin(request)) return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
+  if (!(await verifyAdmin(request))) return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
 
   const websiteId = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
   if (!websiteId) return NextResponse.json({ error: "Die Umami-Website-ID fehlt." }, { status: 503 });

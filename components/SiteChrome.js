@@ -155,9 +155,9 @@ export function NewsletterModal() {
     <div className="newsletter-modal">
       <button className="modal-close" type="button" onClick={close} aria-label="Close">×</button>
       {status === "success" ? <>
-        <p className="eyebrow"><T en="Thank you" de="Danke" /></p>
-        <h2 id="newsletter-title"><T en="You’re on the list ✨" de="Deine Anmeldung ist gespeichert ✨" /></h2>
-        <p><T en="Thank you. Your email address has been saved for the Lepigonia newsletter. No emails are being sent yet." de="Danke. Deine E-Mail-Adresse wurde für den Lepigonia-Newsletter gespeichert. Aktuell werden noch keine E-Mails verschickt." /></p>
+        <p className="eyebrow"><T en="Almost there" de="Fast geschafft" /></p>
+        <h2 id="newsletter-title"><T en="Please confirm your email ✨" de="Bitte bestätige deine E-Mail ✨" /></h2>
+        <p><T en="We have sent you an email with a confirmation link. Your subscription only becomes valid once you click it (please check your spam folder too). No newsletter emails are being sent yet." de="Wir haben dir eine E-Mail mit einem Bestätigungslink geschickt. Deine Anmeldung wird erst wirksam, wenn du darauf klickst (schau bitte auch im Spam-Ordner nach). Aktuell werden noch keine Newsletter-E-Mails verschickt." /></p>
       </> : <>
         <p className="eyebrow"><T en="A note from the road" de="Eine Nachricht von unterwegs" /></p>
         <h2 id="newsletter-title"><T en="Come along for the journey." de="Komm mit auf die Reise." /></h2>
@@ -166,11 +166,11 @@ export function NewsletterModal() {
           <label className="sr-only" htmlFor="newsletter-email"><T en="Email address" de="E-Mail-Adresse" /></label>
           <input id="newsletter-email" type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="Email address" autoComplete="email" />
           <label className="newsletter-honeypot" aria-hidden="true">Website<input type="text" tabIndex={-1} autoComplete="off" value={website} onChange={e => setWebsite(e.target.value)} /></label>
-          <label className="newsletter-consent"><input type="checkbox" required checked={consent} onChange={e => setConsent(e.target.checked)} /><span><T en={<>I agree to receive the Lepigonia newsletter by email. My email address and consent are stored for this purpose. I can withdraw my consent at any time. See the <Link href="/privacy">privacy notice</Link>.</>} de={<>Ich möchte den Lepigonia-Newsletter per E-Mail erhalten. Meine E-Mail-Adresse und meine Einwilligung werden dafür gespeichert. Ich kann meine Einwilligung jederzeit widerrufen. Weitere Informationen in den <Link href="/privacy">Datenschutzhinweisen</Link>.</>} /></span></label>
+          <label className="newsletter-consent"><input type="checkbox" required checked={consent} onChange={e => setConsent(e.target.checked)} /><span><T en={<>I agree to receive the Lepigonia newsletter by email. My email address and consent are stored for this purpose, and I will first receive an email asking me to confirm. I can withdraw my consent at any time. See the <Link href="/privacy">privacy notice</Link>.</>} de={<>Ich möchte den Lepigonia-Newsletter per E-Mail erhalten. Meine E-Mail-Adresse und meine Einwilligung werden dafür gespeichert; ich erhalte zunächst eine E-Mail zur Bestätigung. Ich kann meine Einwilligung jederzeit widerrufen. Weitere Informationen in den <Link href="/privacy">Datenschutzhinweisen</Link>.</>} /></span></label>
           <button type="submit" disabled={status === "loading" || !consent}>{status === "loading" ? <T en="Joining…" de="Wird eingetragen …" /> : <T en="Join the journey →" de="Mitreisen →" />}</button>
         </form>
         {status === "error" && <p className="form-error"><T en="Your signup could not be saved right now. Please try again later." de="Die Anmeldung konnte gerade nicht gespeichert werden. Bitte versuche es später erneut." /></p>}
-        <small><T en="Your address is stored for this newsletter list. No newsletter emails are sent yet." de="Deine Adresse wird für diese Newsletter-Liste gespeichert. Es werden noch keine Newsletter-E-Mails versendet." /></small>
+        <small><T en="You will first receive a confirmation email; only then are you subscribed. No newsletter emails are sent yet." de="Du erhältst zuerst eine Bestätigungs-E-Mail; erst danach bist du angemeldet. Es werden noch keine Newsletter-E-Mails versendet." /></small>
       </>}
     </div>
   </div>;

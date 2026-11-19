@@ -1,21 +1,27 @@
 import { NextResponse } from "next/server";
 import { del } from "@vercel/blob";
-import { isAdmin } from "../../../../lib/admin";
+import { verifyAdmin } from "../../../../lib/admin";
 import { getGallery, ensureDatabase, sql, slugifyCountry } from "../../../../lib/db";
+import { getLivePostSlugs } from "../../../../lib/github-posts";
+import { isBlobImageUrl } from "../../../../lib/media";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request) {
-  if (!isAdmin(request)) return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
+  if (!(await verifyAdmin(request))) return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
   try {
-    return NextResponse.json(await getGallery({ syncPosts: true }));
+    // `postExists` must reflect the repository right now, not the last deployment.
+    let postSlugs = null;
+    try { postSlugs = await getLivePostSlugs(); }
+    catch (error) { console.warn("Live post slugs unavailable, using deployed snapshot:", error?.message || error); }
+    return NextResponse.json(await getGallery({ syncPosts: true, postSlugs }));
   } catch (error) {
     return NextResponse.json({ error: error.message || "Galerie konnte nicht geladen werden." }, { status: 500 });
   }
 }
 
 export async function POST(request) {
-  if (!isAdmin(request)) return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
+  if (!(await verifyAdmin(request))) return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
   try {
     await ensureDatabase();
     const db = sql();
@@ -65,11 +71,13 @@ export async function POST(request) {
       const country = (await db`SELECT id FROM gallery_countries WHERE slug=${body.slug} LIMIT 1`)[0];
       if (!country) return NextResponse.json({ error: "Land nicht gefunden." }, { status: 404 });
       if (!body.url || !body.filename) return NextResponse.json({ error: "Bild-URL oder Dateiname fehlt." }, { status: 400 });
+      if (!isBlobImageUrl(body.url)) return NextResponse.json({ error: "Ungültige Bild-URL: Es sind nur Vercel-Blob-Adressen (https) erlaubt." }, { status: 400 });
+      const filename = String(body.filename).slice(0, 300);
       const source = body.source === "blog" ? "blog" : "manual";
       const postSlug = source === "blog" ? (body.postSlug || null) : null;
       const id = source === "blog" && postSlug ? `post-${postSlug}-${Buffer.from(body.url).toString("base64url").slice(-32)}` : `manual-${crypto.randomUUID()}`;
       await db`INSERT INTO gallery_images (id,country_id,source,post_slug,url,filename,storage,created_at)
-        VALUES (${id},${country.id},${source},${postSlug},${body.url},${body.filename},'blob',NOW())
+        VALUES (${id},${country.id},${source},${postSlug},${body.url},${filename},'blob',NOW())
         ON CONFLICT (id) DO UPDATE SET country_id=EXCLUDED.country_id,url=EXCLUDED.url,filename=EXCLUDED.filename,storage=EXCLUDED.storage`;
       return NextResponse.json({ ok: true, url: body.url, id });
     }
@@ -79,9 +87,14 @@ export async function POST(request) {
       if (!image) return NextResponse.json({ error: "Bild nicht gefunden." }, { status: 404 });
 
       if (image.source === "blog") {
-        const { getPosts } = await import("../../../../lib/posts");
-        const postExists = getPosts().some((post) => post.slug === image.post_slug);
-        if (postExists) {
+        // Ask GitHub, not the last deployment: a post saved a minute ago must still protect its images.
+        let liveSlugs;
+        try { liveSlugs = await getLivePostSlugs(); }
+        catch (error) {
+          console.error("Live post check failed:", error?.message || error);
+          return NextResponse.json({ error: "Der aktuelle Stand der Beiträge konnte nicht von GitHub geladen werden. Zur Sicherheit wurde nichts gelöscht - bitte später erneut versuchen." }, { status: 502 });
+        }
+        if (liveSlugs.has(image.post_slug)) {
           return NextResponse.json({
             error: "Dieses Bild gehört noch zu einem bestehenden Blogartikel. Entferne es dort aus dem Artikel, statt das Asset direkt aus der Galerie zu löschen.",
           }, { status: 409 });
