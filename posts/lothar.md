@@ -1,10 +1,11 @@
 ---
 title: A New Chapter: My VW T4 Double Cab and the Vision of an Expedition Vehicle
 date: 2025-12-27
-location: Stuttgart
+location: Chemnitz
 country: Germany
-lat: 
-lng: 
+lat: 50.832774
+lng: 12.924952
+mapOnly: false
 image: https://86ec824d1amijkwd.public.blob.vercel-storage.com/blog/1794525083529-IMG_2748-h6kBrRgS0jGF5unCJOplNpw0HnhdEH.jpeg
 excerpt: Sometimes, a new chapter begins long before you know exactly what it will look like.
 ---
