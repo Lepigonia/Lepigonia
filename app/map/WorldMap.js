@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import "leaflet/dist/leaflet.css";
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 
 const COUNTRY_FLAGS = {
   germany: "🇩🇪", deutschland: "🇩🇪", france: "🇫🇷", frankreich: "🇫🇷", portugal: "🇵🇹", spain: "🇪🇸", spanien: "🇪🇸",
@@ -57,6 +59,10 @@ export default function WorldMap({ posts = [] }) {
       if (cancelled || !ref.current) return;
       const L = (await import("leaflet")).default;
       if (cancelled || !ref.current) return;
+      // Load MarkerCluster only in the browser, after Leaflet exists.
+      window.L = L;
+      await import("leaflet.markercluster");
+      if (cancelled || !ref.current) return;
       map = L.map(ref.current, { worldCopyJump: true, scrollWheelZoom: false, zoomControl: true, minZoom: 2, maxZoom: 19 });
       const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "&copy; OpenStreetMap contributors", maxZoom: 19, keepBuffer: 3 }).addTo(map);
       let fallbackAdded = false;
@@ -67,6 +73,23 @@ export default function WorldMap({ posts = [] }) {
           fallbackAdded = true;
           L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", { attribution: "&copy; OpenStreetMap contributors &copy; CARTO", maxZoom: 19, keepBuffer: 3 }).addTo(map);
         }
+      });
+      const markerLayer = L.markerClusterGroup({
+        showCoverageOnHover: false,
+        zoomToBoundsOnClick: true,
+        spiderfyOnMaxZoom: true,
+        spiderfyDistanceMultiplier: 1.35,
+        removeOutsideVisibleBounds: false,
+        maxClusterRadius: 52,
+        iconCreateFunction: (cluster) => {
+          const count = cluster.getChildCount();
+          return L.divIcon({
+            className: "lepigonia-marker-cluster-wrap",
+            html: `<span class="lepigonia-marker-cluster"><b>${count}</b><small>${language === "DE" ? "Beiträge" : "stories"}</small></span>`,
+            iconSize: [54, 54],
+            iconAnchor: [27, 27],
+          });
+        },
       });
       const valid = sortPosts(posts);
       const isMapOnly = (post) => post.mapOnly === true || String(post.mapOnly).toLowerCase() === "true";
@@ -87,11 +110,12 @@ export default function WorldMap({ posts = [] }) {
             ? `<span class="lepigonia-map-marker lepigonia-map-marker--place"><span class="lepigonia-map-flag">${flag}</span><b>✦</b></span>`
             : `<span class="lepigonia-map-marker"><span class="lepigonia-map-flag">${flag}</span><b>${stopIndex + 1}</b></span>`;
           const icon = L.divIcon({ className: "lepigonia-map-marker-wrap", html: markerContent, iconSize: [58, 40], iconAnchor: [29, 20], popupAnchor: [0, -18] });
-          const marker = L.marker([lat, lng], { icon }).addTo(map);
+          const marker = L.marker([lat, lng], { icon }).addTo(markerLayer);
           const markerLabel = mapOnly ? (language === "DE" ? "Ort auf der Karte" : "Mapped place") : `${stopIndex + 1} · ${stopLabel}`;
           marker.bindTooltip(`<strong>${mapOnly ? escapeHtml(markerLabel) : `${stopIndex + 1} · ${escapeHtml(location)}`}</strong><br>${escapeHtml(title)}`, { direction: "top", offset: [0, -18], opacity: 0.98 });
           marker.bindPopup(`<article class="map-popup"><span class="map-popup-kicker">${flag} ${escapeHtml(location)}</span><strong>${escapeHtml(title)}</strong>${post.date ? `<small>${escapeHtml(post.date)}</small>` : ""}<a href="/blog/${encodeURIComponent(post.slug)}">${storyLabel} <span>→</span></a></article>`);
         });
+        markerLayer.addTo(map);
         if (routePoints.length > 1) route = L.polyline(routePoints, { color: "#171715", weight: 1.5, opacity: 0.42, dashArray: "5 8", interactive: false }).addTo(map);
         map.fitBounds(bounds, { padding: [55, 55], maxZoom: 5 });
       }

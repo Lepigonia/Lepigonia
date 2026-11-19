@@ -59,3 +59,12 @@
 .lepigonia-map-marker--place{border-style:dashed;background:#e9e0d4}
 .lepigonia-map-marker--place b{font-size:15px;color:#8b6f45}
 .map-legend-place{font-size:14px;color:#8b6f45;margin-left:7px}
+
+
+/* Marker clusters keep nearby stories selectable; spiderfy separates exact overlaps. */
+.lepigonia-marker-cluster-wrap{background:transparent;border:0}
+.lepigonia-marker-cluster{display:flex;flex-direction:column;align-items:center;justify-content:center;width:50px;height:50px;border:1px solid rgba(23,23,21,.72);border-radius:50%;background:rgba(251,249,245,.97);box-shadow:0 5px 18px rgba(0,0,0,.2);color:var(--ink);line-height:1}
+.lepigonia-marker-cluster b{font:500 17px var(--serif)}
+.lepigonia-marker-cluster small{font:8px var(--sans);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:3px}
+.marker-cluster-spiderfy-leg{stroke:rgba(23,23,21,.55);stroke-width:1.4}
+.leaflet-marker-icon.lepigonia-map-marker-wrap{transition:transform .15s ease}
