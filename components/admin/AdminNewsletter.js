@@ -50,6 +50,9 @@ export default function AdminNewsletter() {
     return new Intl.DateTimeFormat("de-DE", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
   }
 
+  const confirmed = subscribers.filter((item) => item.status === "confirmed");
+  const pending = subscribers.filter((item) => item.status !== "confirmed");
+
   return (
     <section className="editor newsletter-admin">
       <div className="editor-head">
@@ -60,21 +63,23 @@ export default function AdminNewsletter() {
         </div>
       </div>
       <div className="newsletter-admin-summary">
-        <div><strong>{subscribers.length}</strong><span>Aktive Anmeldungen</span></div>
+        <div><strong>{confirmed.length}</strong><span>Bestätigte Anmeldungen</span></div>
+        <div><strong>{pending.length}</strong><span>Warten auf Bestätigung</span></div>
         <div><strong>{subscribers.filter((item) => item.source === "popup").length}</strong><span>Über Pop-up</span></div>
         <div><strong>{subscribers.filter((item) => item.source === "newsletter-link").length}</strong><span>Über Newsletter-Link</span></div>
       </div>
       <div className="newsletter-admin-toolbar">
         <button type="button" className="save" onClick={load} disabled={loading}>Liste aktualisieren</button>
-        <a className="analytics-action" href="/api/admin/newsletter?format=csv">CSV exportieren ↓</a>
+        <a className="analytics-action" href="/api/admin/newsletter?format=csv">CSV exportieren (nur bestätigte) ↓</a>
       </div>
       {loading ? <p className="status">Lade Anmeldungen …</p> : subscribers.length ? (
         <div className="newsletter-table-wrap">
           <table className="newsletter-table">
-            <thead><tr><th>E-Mail-Adresse</th><th>Angemeldet am</th><th>Quelle</th><th>Aktion</th></tr></thead>
+            <thead><tr><th>E-Mail-Adresse</th><th>Status</th><th>Angemeldet am</th><th>Quelle</th><th>Aktion</th></tr></thead>
             <tbody>{subscribers.map((entry) => (
               <tr key={entry.id}>
                 <td data-label="E-Mail-Adresse">{entry.email}</td>
+                <td data-label="Status">{entry.status === "confirmed" ? `Bestätigt (${formatDate(entry.confirmedAt)})` : "Wartet auf Bestätigung"}</td>
                 <td data-label="Angemeldet am">{formatDate(entry.consentedAt || entry.createdAt)}</td>
                 <td data-label="Quelle">{entry.source === "popup" ? "Pop-up" : "Newsletter-Link"}</td>
                 <td data-label="Aktion"><button className="danger" type="button" disabled={busyId === entry.id} onClick={() => remove(entry)}>{busyId === entry.id ? "Lösche …" : "Löschen"}</button></td>
@@ -82,9 +87,9 @@ export default function AdminNewsletter() {
             ))}</tbody>
           </table>
         </div>
-      ) : !error ? <div className="newsletter-empty"><h2>Noch keine Anmeldungen</h2><p>Sobald sich jemand über das Pop-up oder den Newsletter-Link einträgt und die Einwilligung bestätigt, erscheint die Adresse hier.</p></div> : null}
+      ) : !error ? <div className="newsletter-empty"><h2>Noch keine Anmeldungen</h2><p>Sobald sich jemand über das Pop-up oder den Newsletter-Link einträgt und per E-Mail bestätigt, erscheint die Adresse hier.</p></div> : null}
       {error && <p className="admin-error">{error}</p>}
-      <p className="newsletter-admin-note">Gespeichert werden E-Mail-Adresse, Zeitpunkt, Einwilligungstext und Anmeldequelle. Es werden derzeit keine Newsletter versendet. Einträge kannst du hier löschen oder als CSV exportieren.</p>
+      <p className="newsletter-admin-note">Gespeichert werden E-Mail-Adresse, Zeitpunkt, Einwilligungstext, Bestätigungszeitpunkt und Anmeldequelle. Die Anmeldung erfolgt per Double-Opt-in: nur bestätigte Adressen dürfen angeschrieben werden und nur sie sind im CSV-Export (inkl. persönlichem Abmelde-Link je Adresse) enthalten. Unbestätigte Anmeldungen werden nach 7 Tagen automatisch gelöscht. Es werden derzeit keine Newsletter versendet.</p>
     </section>
   );
 }

@@ -1,9 +1,9 @@
 import { handleUpload } from "@vercel/blob/client";
 import { NextResponse } from "next/server";
-import { isAdmin } from "../../../../lib/admin";
+import { verifyAdmin } from "../../../../lib/admin";
 
 export async function POST(request) {
-  if (!isAdmin(request)) return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
+  if (!(await verifyAdmin(request))) return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
   try {
     const body = await request.json();
     const response = await handleUpload({

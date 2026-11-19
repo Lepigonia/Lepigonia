@@ -7,6 +7,7 @@ import { adminApi } from "../../lib/admin-api";
 export default function AdminLogin({ onSuccess }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [totp, setTotp] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -15,7 +16,7 @@ export default function AdminLogin({ onSuccess }) {
     setError("");
     setBusy(true);
     try {
-      await adminApi.login({ email, password });
+      await adminApi.login({ email, password, totp });
       await onSuccess();
     } catch (err) {
       setError(err.message);
@@ -34,6 +35,7 @@ export default function AdminLogin({ onSuccess }) {
         <form onSubmit={submit}>
           <label>E-Mail<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>
           <label>Passwort<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required /></label>
+          <label>2FA-Code (falls aktiviert)<input inputMode="numeric" autoComplete="one-time-code" maxLength={7} value={totp} onChange={(e) => setTotp(e.target.value)} placeholder="123456" /></label>
           <button disabled={busy}>{busy ? "Einloggen …" : "Einloggen →"}</button>
           {error && <p className="admin-error">{error}</p>}
         </form>

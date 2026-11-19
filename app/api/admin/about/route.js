@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { getGithubFile, putGithubFile, isAdmin } from "../../../../lib/admin";
+import { getGithubFile, putGithubFile, verifyAdmin } from "../../../../lib/admin";
 
 const fallback = { en: { eyebrow: "Behind the journal", title: "A real person. A life in motion.", paragraphs: ["", "", ""] }, de: { eyebrow: "Hinter dem Journal", title: "Ein echter Mensch. Ein Leben unterwegs.", paragraphs: ["", "", ""] }, images: [] };
 async function read() { try { const f = await getGithubFile("data/about.json"); return { data: JSON.parse(Buffer.from(f.content, "base64").toString("utf8")), sha: f.sha }; } catch { return { data: fallback, sha: null }; } }
-export async function GET(request) { if (!isAdmin(request)) return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 }); return NextResponse.json((await read()).data); }
+export async function GET(request) { if (!(await verifyAdmin(request))) return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 }); return NextResponse.json((await read()).data); }
 export async function POST(request) {
-  if (!isAdmin(request)) return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
+  if (!(await verifyAdmin(request))) return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
   try {
     const { data, sha } = await read();
     const body = await request.json();

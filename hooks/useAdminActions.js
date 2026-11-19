@@ -30,14 +30,16 @@ export function useAdminActions({ data, gallery, setGallery, setPost, setSection
     clearMessages();
     setStatus("Speichere …");
     try {
-      await adminApi.savePost(post);
+      const result = await adminApi.savePost(post);
+      // Remember the new version of the file, so the next save of the same open post is not mistaken for a conflict.
+      if (result?.sha) setPost((value) => (value.slug === post.slug ? { ...value, sha: result.sha } : value));
       setStatus("Gespeichert – Vercel veröffentlicht automatisch.");
       await refresh();
     } catch (err) {
       setError(err.message);
       setStatus("");
     }
-  }, [clearMessages, refresh]);
+  }, [clearMessages, refresh, setPost]);
 
   const deletePost = useCallback(async (slug, blankPost) => {
     if (!confirm("Beitrag wirklich löschen?")) return;

@@ -5,6 +5,9 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   smoke:
     runs-on: ubuntu-latest
@@ -16,7 +19,13 @@ jobs:
         with:
           node-version: 24
       - name: Install dependencies
-        run: npm install --no-fund
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --no-fund
+          else
+            echo "::warning::package-lock.json fehlt - bitte committen, damit Builds reproduzierbar sind."
+            npm install --no-fund
+          fi
       - name: Audit dependencies
         run: npm audit --audit-level=high
       - name: Wait for Vercel deployment

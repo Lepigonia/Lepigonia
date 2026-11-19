@@ -6,10 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test:api": "node scripts/run-api-smoke-test.mjs"
+    "test:api": "node scripts/run-api-smoke-test.mjs",
+    "totp:generate": "node scripts/generate-totp-secret.mjs"
   },
   "dependencies": {
-    "@neondatabase/serverless": "latest",
+    "@neondatabase/serverless": "^1.0.2",
     "@vercel/blob": "2.4.0",
     "leaflet": "^1.9.4",
     "marked": "^15.0.12",

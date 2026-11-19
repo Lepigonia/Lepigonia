@@ -7,6 +7,7 @@ import "./login.css";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [totp, setTotp] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -15,7 +16,7 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch("/api/auth/login", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email, password }) });
+      const response = await fetch("/api/auth/login", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email, password, totp }) });
       const data = await response.json();
       if (!response.ok) {
         setError(data.error || "Login failed.");
@@ -38,6 +39,7 @@ export default function LoginPage() {
       <form onSubmit={submit}>
         <label><T en="Email" de="E-Mail" /><input type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} required /></label>
         <label><T en="Password" de="Passwort" /><input type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} required /></label>
+        <label><T en="2FA code (if enabled)" de="2FA-Code (falls aktiviert)" /><input inputMode="numeric" autoComplete="one-time-code" maxLength={7} value={totp} onChange={e => setTotp(e.target.value)} placeholder="123456" /></label>
         <button type="submit" disabled={loading}>{loading ? <T en="Signing in …" de="Anmelden …" /> : <T en="Sign in →" de="Anmelden →" />}</button>
         {error && <p className="login-error" role="alert">{error}</p>}
       </form>
