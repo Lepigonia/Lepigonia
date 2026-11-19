@@ -5,7 +5,7 @@ location: Chemnitz
 country: T4 Double Cab
 lat: 50.832774
 lng: 12.924952
-mapOnly: true
+mapOnly: false
 image: https://86ec824d1amijkwd.public.blob.vercel-storage.com/blog/1795103685322-IMG_2749-afeEd1Jlpyrkmi2PnFV8YHAR2fYE8E.jpeg
 excerpt: Every old vehicle has a story. Sometimes, it also has a few surprises hiding underneath. After buying my 1995 Volkswagen T4 Double Cab, it was time to take a closer look at what I had actually brought home. And as it turned out, there was quite a bit more work waiting for me than I had initially expected.
 ---
