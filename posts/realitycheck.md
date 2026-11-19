@@ -1,5 +1,5 @@
 ---
-title: **A Reality Check: What Was Hiding Beneath My VW T4 Double Cab?**
+title: A Reality Check: What Was Hiding Beneath My VW T4 Double Cab?
 date: 2026-04-01
 location: Chemnitz
 country: T4 Double Cab
