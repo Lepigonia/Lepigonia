@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import "leaflet/dist/leaflet.css";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
-import "leaflet.markercluster";
 
 const COUNTRY_FLAGS = {
   germany: "🇩🇪", deutschland: "🇩🇪", france: "🇫🇷", frankreich: "🇫🇷", portugal: "🇵🇹", spain: "🇪🇸", spanien: "🇪🇸",
@@ -59,6 +58,10 @@ export default function WorldMap({ posts = [] }) {
     const init = async () => {
       if (cancelled || !ref.current) return;
       const L = (await import("leaflet")).default;
+      if (cancelled || !ref.current) return;
+      // Load MarkerCluster only in the browser, after Leaflet exists.
+      window.L = L;
+      await import("leaflet.markercluster");
       if (cancelled || !ref.current) return;
       map = L.map(ref.current, { worldCopyJump: true, scrollWheelZoom: false, zoomControl: true, minZoom: 2, maxZoom: 19 });
       const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "&copy; OpenStreetMap contributors", maxZoom: 19, keepBuffer: 3 }).addTo(map);
